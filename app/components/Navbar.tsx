@@ -13,7 +13,8 @@ import {
   Sparkles,
   ChevronRight,
   ArrowRight,
-  Heart
+  Heart,
+  LayoutDashboard // Added Icon for Dashboard
 } from "lucide-react";
 import {
   motion,
@@ -32,7 +33,7 @@ const CONTENT = {
   sub: { mn: "MONGOLIA", en: "MONGOLIA" },
   login: { mn: "Нэвтрэх", en: "Sign In" },
   join: { mn: "Нэгдэх", en: "Join Us" },
-  dashboard: { mn: "Профайл", en: "Profile" },
+  dashboard: { mn: "Миний Булан", en: "Dashboard" }, // Updated label
 };
 
 // --- MAGNETIC BUTTON ---
@@ -71,7 +72,7 @@ export default function UnicefNavbar() {
   const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30, restDelta: 0.001 });
 
   // Transforms
-  const width = useTransform(scrollY, [0, 100], ["1200px", "1050px"]); 
+  const width = useTransform(scrollY, [0, 100], ["1200px", "1080px"]); 
   const y = useTransform(scrollY, [0, 100], [24, 12]);
   
   const navBg = useTransform(scrollY, [0, 100], ["rgba(0, 174, 239, 1)", "rgba(255, 255, 255, 0.9)"]);
@@ -189,24 +190,36 @@ export default function UnicefNavbar() {
             </div>
 
             {/* RIGHT SIDE ACTIONS */}
-            <div className="flex items-center gap-4 border-l border-white/10 pl-6 ml-2 flex-shrink-0">
-               {/* Language Toggle - Added relative and z-50 to fix clicking issue */}
+            <div className="flex items-center gap-6 border-l border-white/10 pl-6 ml-2 flex-shrink-0">
+               
+               {/* Language Toggle (z-100 to fix intersection issues) */}
                <button 
                  onClick={toggleLanguage} 
-                 className={`relative z-50 w-9 h-9 flex items-center justify-center rounded-full border border-white/20 transition-all active:scale-95 ${isScrolled ? "text-gray-500 hover:bg-gray-100" : "text-white hover:bg-white/10"}`}
+                 className={`relative z-[100] w-9 h-9 flex items-center justify-center rounded-full border border-white/20 transition-all active:scale-95 ${isScrolled ? "text-gray-500 hover:bg-gray-100" : "text-white hover:bg-white/10"}`}
                >
                   <span className="text-[10px] font-black">{lang === "mn" ? "EN" : "MN"}</span>
                </button>
 
-               {/* Auth Buttons */}
+               {/* Logged In State: Show Dashboard Button + User Profile */}
                <SignedIn>
-                   <div className="relative z-50 ring-2 ring-offset-2 ring-[#00aeef] rounded-full scale-110">
-                       <UserButton />
+                   <div className="flex items-center gap-4 relative z-50">
+                       <Link href="/dashboard" className={`
+                          hidden lg:flex items-center gap-2 px-5 py-2 rounded-full border text-xs font-bold uppercase tracking-wide transition-all
+                          ${isScrolled 
+                             ? "border-[#00aeef] text-[#00aeef] hover:bg-[#00aeef] hover:text-white" 
+                             : "border-white/20 bg-white/10 text-white hover:bg-white hover:text-[#00aeef]"}
+                       `}>
+                          <LayoutDashboard size={14} />
+                          <span>{CONTENT.dashboard[lang]}</span>
+                       </Link>
+                       <div className="ring-2 ring-offset-2 ring-[#00aeef] rounded-full scale-110">
+                           <UserButton afterSignOutUrl="/" />
+                       </div>
                    </div>
                </SignedIn>
 
+               {/* Logged Out State: Join Button */}
                <SignedOut>
-                 {/* Join Button */}
                  <div className="relative z-50"> 
                    <MagneticWrapper strength={0.3}>
                      <Link href="/join" className={`
@@ -216,7 +229,6 @@ export default function UnicefNavbar() {
                         <span className="relative z-10 flex items-center gap-2 group-hover:gap-3 transition-all">
                             {CONTENT.join[lang]} <ArrowRight size={14} />
                         </span>
-                        {/* Shimmer Effect */}
                         <div className="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1s_infinite] bg-gradient-to-r from-transparent via-white/30 to-transparent" />
                      </Link>
                    </MagneticWrapper>
@@ -245,7 +257,7 @@ export default function UnicefNavbar() {
         </Link>
         <div className="flex gap-3 items-center">
             <button onClick={toggleLanguage} className="bg-gray-50 border border-gray-200 w-8 h-8 flex items-center justify-center rounded-full text-[10px] font-bold text-gray-600">{lang === 'mn' ? 'EN' : 'MN'}</button>
-            <SignedIn><UserButton /></SignedIn>
+            <SignedIn><UserButton afterSignOutUrl="/" /></SignedIn>
             <SignedOut><Link href="/sign-in" className="bg-[#00aeef] text-white p-2 rounded-full shadow-lg shadow-blue-200"><LogIn size={18} /></Link></SignedOut>
         </div>
       </motion.div>
