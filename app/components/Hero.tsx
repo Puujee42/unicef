@@ -1,0 +1,422 @@
+"use client";
+
+import React, { useState, useEffect, useRef } from "react";
+import Link from "next/link";
+import { 
+  ArrowRight, 
+  Heart, 
+  Users, 
+  Globe, 
+  Megaphone, 
+  FileText,
+  Sparkles,
+  Target
+} from "lucide-react";
+import { 
+  motion, 
+  useMotionTemplate, 
+  useMotionValue, 
+  useSpring, 
+  useTransform 
+} from "framer-motion";
+import { useLanguage } from "../context/LanguageContext";
+
+// --- BRAND COLORS ---
+const BRAND = {
+  sky: "#00aeef",
+  ocean: "#005691",
+  deep: "#001829",
+  gold: "#fbbf24",
+  white: "#ffffff",
+};
+
+// --- DATA ---
+const TEXTS = {
+  headline: { en: "Small Actions", mn: "Жижиг Үйлдэл" },
+  highlight: { en: "Big Differences", mn: "Том Өөрчлөлт" },
+  description: { 
+    en: "MNUMS Student UNICEF Club represents a bright future for every child. We advocate for rights, equality, and inclusive education through student-led initiatives.",
+    mn: "АШУҮИС-ийн Оюутны UNICEF Клуб нь хүүхэд бүрийн гэрэлт ирээдүйн төлөө. Бид оюутан залуусын санаачилгаар тэгш байдал, хүртээмжтэй нийгмийг бүтээнэ."
+  },
+  stats: [
+    { label: { en: "Est.", mn: "Байгуулагдсан" }, value: "2025" },
+    { label: { en: "University", mn: "Сургууль" }, value: "MNUMS" },
+    { label: { en: "Status", mn: "Төлөв" }, value: "Active" },
+  ],
+  weStandFor: { en: "Our Mission:", mn: "Бидний Эрхэм Зорилго:" }
+};
+
+const TYPEWRITER_WORDS = [
+  { text: "Bright Future", mnText: "Гэрэлт Ирээдүй", color: BRAND.gold }, 
+  { text: "Child Rights", mnText: "Хүүхдийн Эрх", color: BRAND.sky },
+  { text: "Gender Equality", mnText: "Жендэрийн Тэгш Байдал", color: "#f472b6" }, // Pink
+  { text: "Inclusive Education", mnText: "Тэгш Боловсрол", color: "#4ade80" } // Green
+];
+
+const ACTIVITY_CARDS = [
+  {
+    id: 1,
+    icon: Megaphone,
+    title: { en: "Campaigns", mn: "Аяны Ажил" },
+    desc: { en: "Social psychology & awareness drives.", mn: "Нийгмийн сэтгэл зүйд нөлөөлөх ажил." },
+    color: "bg-sky-500",
+    glow: "shadow-sky-500/50"
+  },
+  {
+    id: 2,
+    icon: Users,
+    title: { en: "Training", mn: "Сургалт" },
+    desc: { en: "Lectures on gender & rights.", mn: "Жендэрийн мэдрэмжтэй сургалт, лекц." },
+    color: "bg-indigo-500",
+    glow: "shadow-indigo-500/50"
+  },
+  {
+    id: 3,
+    icon: FileText,
+    title: { en: "Reporting", mn: "Тайлагнал" },
+    desc: { en: "Annual transparent reporting.", mn: "Жил бүр клубын үйл ажиллагааг тайлагнах." },
+    color: "bg-teal-500",
+    glow: "shadow-teal-500/50"
+  }
+];
+
+// --- COMPONENTS ---
+
+// 1. Enhanced Typewriter
+const Typewriter = ({ lang }: { lang: 'en' | 'mn' }) => {
+  const [index, setIndex] = useState(0);
+  const [subIndex, setSubIndex] = useState(0);
+  const [reverse, setReverse] = useState(false);
+  const [blink, setBlink] = useState(true);
+
+  // Blinking cursor
+  useEffect(() => {
+    const timeout = setTimeout(() => setBlink(!blink), 500);
+    return () => clearTimeout(timeout);
+  }, [blink]);
+
+  // Typing logic
+  useEffect(() => {
+    const currentWord = lang === 'mn' ? TYPEWRITER_WORDS[index].mnText : TYPEWRITER_WORDS[index].text;
+
+    if (subIndex === currentWord.length + 1 && !reverse) {
+      setTimeout(() => setReverse(true), 2500); // Pause before deleting
+      return;
+    }
+
+    if (subIndex === 0 && reverse) {
+      setReverse(false);
+      setIndex((prev) => (prev + 1) % TYPEWRITER_WORDS.length);
+      return;
+    }
+
+    const timeout = setTimeout(() => {
+      setSubIndex((prev) => prev + (reverse ? -1 : 1));
+    }, reverse ? 75 : 150); // Typing speed
+
+    return () => clearTimeout(timeout);
+  }, [subIndex, index, reverse, lang]);
+
+  return (
+    <div className="flex items-center">
+      <span className="text-3xl md:text-4xl font-black tracking-tight drop-shadow-lg" style={{ color: TYPEWRITER_WORDS[index].color }}>
+        {(lang === 'mn' ? TYPEWRITER_WORDS[index].mnText : TYPEWRITER_WORDS[index].text).substring(0, subIndex)}
+      </span>
+      <motion.span
+        animate={{ opacity: [0, 1, 0] }}
+        transition={{ repeat: Infinity, duration: 0.8 }}
+        className="w-[4px] h-[1em] bg-white ml-2 rounded-full"
+      />
+    </div>
+  );
+};
+
+// 2. 3D Tilt Card Container
+const TiltCard = ({ children }: { children: React.ReactNode }) => {
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+  const mouseXSpring = useSpring(x);
+  const mouseYSpring = useSpring(y);
+
+  const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["15deg", "-15deg"]);
+  const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-15deg", "15deg"]);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const width = rect.width;
+    const height = rect.height;
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+    x.set(mouseX / width - 0.5);
+    y.set(mouseY / height - 0.5);
+  };
+
+  const handleMouseLeave = () => {
+    x.set(0);
+    y.set(0);
+  };
+
+  return (
+    <motion.div
+      style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      className="relative z-10 w-full perspective-1000"
+    >
+      {children}
+    </motion.div>
+  );
+};
+
+// 3. Info List Item
+const InfoCard = ({ data, lang, index }: any) => {
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: 50 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ delay: 0.8 + index * 0.1 }}
+      className="group flex items-center gap-5 p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/20 backdrop-blur-md transition-all cursor-default transform translate-z-10"
+    >
+      <div className={`w-14 h-14 rounded-xl ${data.color} flex items-center justify-center text-white shadow-lg ${data.glow} group-hover:scale-110 transition-transform duration-300`}>
+        <data.icon size={26} strokeWidth={2.5} />
+      </div>
+      <div>
+        <h4 className="text-white font-bold text-sm uppercase tracking-wide group-hover:text-[#00aeef] transition-colors">{data.title[lang]}</h4>
+        <p className="text-white/60 text-xs mt-1 leading-snug font-medium max-w-[200px]">{data.desc[lang]}</p>
+      </div>
+    </motion.div>
+  );
+};
+
+// --- MAIN HERO ---
+export default function Hero() {
+  const { language: lang } = useLanguage();
+  
+  // Background Spotlight
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  function handleMouseMove({ currentTarget, clientX, clientY }: React.MouseEvent) {
+    const { left, top } = currentTarget.getBoundingClientRect();
+    mouseX.set(clientX - left);
+    mouseY.set(clientY - top);
+  }
+
+  return (
+    <section 
+      className="relative w-full min-h-screen overflow-hidden bg-[#001829] flex items-center"
+      onMouseMove={handleMouseMove}
+    >
+      {/* 1. ATMOSPHERE BACKGROUND */}
+      <div className="absolute inset-0 z-0">
+         {/* Deep Gradient */}
+         <div className="absolute inset-0 bg-gradient-to-br from-[#001829] via-[#002b49] to-[#00101a]" />
+         
+         {/* Mouse Follow Spotlight */}
+         <motion.div
+            className="absolute inset-0 opacity-30 mix-blend-soft-light"
+            style={{
+              background: useMotionTemplate`radial-gradient(800px circle at ${mouseX}px ${mouseY}px, ${BRAND.sky}, transparent 80%)`,
+            }}
+         />
+
+         {/* Floating Particles (CSS Animation) */}
+         <div className="absolute inset-0 opacity-20">
+            <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-white rounded-full animate-pulse" style={{ animationDuration: '3s' }} />
+            <div className="absolute top-3/4 right-1/4 w-3 h-3 bg-[#00aeef] rounded-full animate-pulse" style={{ animationDuration: '5s' }} />
+            <div className="absolute top-1/2 left-3/4 w-1 h-1 bg-[#fbbf24] rounded-full animate-pulse" style={{ animationDuration: '4s' }} />
+         </div>
+
+         {/* Glows */}
+         <div className="absolute -top-[20%] -left-[10%] w-[800px] h-[800px] bg-[#00aeef] rounded-full blur-[200px] opacity-[0.1]" />
+         <div className="absolute -bottom-[20%] -right-[10%] w-[800px] h-[800px] bg-[#005691] rounded-full blur-[200px] opacity-[0.15]" />
+         
+         {/* Noise Overlay */}
+         <div className="absolute inset-0 opacity-[0.03] bg-[url('/noise.png')] mix-blend-overlay" />
+      </div>
+
+      {/* 2. CONTENT GRID */}
+      <div className="relative z-10 max-w-7xl mx-auto w-full px-6 sm:px-8 lg:px-10 grid lg:grid-cols-2 gap-16 lg:gap-24 items-center pt-24 pb-32">
+        
+        {/* --- LEFT: NARRATIVE --- */}
+        <div className="flex flex-col justify-center">
+          
+          {/* Badge */}
+          <motion.div 
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2 }}
+            className="flex items-center gap-3 mb-8"
+          >
+             <div className="px-4 py-1.5 rounded-full bg-[#00aeef]/10 border border-[#00aeef]/30 backdrop-blur-md flex items-center gap-2">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00aeef] opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[#00aeef]"></span>
+                </span>
+                <span className="text-[#00aeef] font-black text-[10px] uppercase tracking-[0.2em]">
+                  Est. 2025
+                </span>
+             </div>
+             <span className="text-white/40 text-xs font-bold uppercase tracking-widest">
+               MNUMS Student Club
+             </span>
+          </motion.div>
+
+          {/* Staggered Headline */}
+          <div className="mb-6 overflow-hidden">
+            <motion.h1 
+               initial={{ opacity: 0, y: 50 }}
+               animate={{ opacity: 1, y: 0 }}
+               transition={{ delay: 0.3, duration: 0.8 }}
+               className="text-6xl md:text-7xl lg:text-8xl font-black text-white leading-[0.9] tracking-tighter"
+            >
+              {TEXTS.headline[lang]} <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00aeef] via-[#38bdf8] to-white drop-shadow-[0_0_15px_rgba(0,174,239,0.5)]">
+                {TEXTS.highlight[lang]}
+              </span>
+            </motion.h1>
+          </div>
+
+          {/* Typewriter Mission */}
+          <motion.div 
+             initial={{ opacity: 0 }}
+             animate={{ opacity: 1 }}
+             transition={{ delay: 0.5 }}
+             className="mb-10 flex flex-col items-start gap-2 h-14"
+          >
+             <span className="text-white/50 font-bold uppercase tracking-widest text-xs flex items-center gap-2">
+                 <Target size={14} /> {TEXTS.weStandFor[lang]}
+             </span>
+             <Typewriter lang={lang} />
+          </motion.div>
+
+          {/* Description */}
+          <motion.p 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.6 }}
+            className="text-white/70 text-lg leading-relaxed max-w-lg mb-10 font-medium"
+          >
+            {TEXTS.description[lang]}
+          </motion.p>
+
+          {/* Stats Bar */}
+          <motion.div 
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.7 }}
+            className="flex gap-10 mb-12 border-l-4 border-[#00aeef] pl-6"
+          >
+            {TEXTS.stats.map((stat, i) => (
+              <div key={i}>
+                 <p className="text-[#00aeef] text-[10px] uppercase font-black tracking-widest mb-1">{stat.label[lang]}</p>
+                 <p className="text-white text-3xl font-bold">{stat.value}</p>
+              </div>
+            ))}
+          </motion.div>
+
+          {/* Actions */}
+          <motion.div 
+             initial={{ opacity: 0, y: 20 }}
+             animate={{ opacity: 1, y: 0 }}
+             transition={{ delay: 0.8 }}
+             className="flex flex-wrap gap-4"
+          >
+             <Link href="/join" className="group relative px-8 py-4 bg-[#00aeef] text-white font-bold rounded-full overflow-hidden shadow-[0_0_40px_-10px_rgba(0,174,239,0.5)] hover:shadow-[0_0_60px_-10px_rgba(0,174,239,0.7)] transition-all">
+                <span className="relative z-10 flex items-center gap-3 uppercase tracking-wide text-xs">
+                   <Heart size={18} className="fill-white" />
+                   {lang === 'mn' ? 'Бидэнтэй Нэгдэх' : 'Join the Club'}
+                </span>
+                <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+             </Link>
+             
+             <button className="group px-8 py-4 border border-white/10 bg-white/5 text-white font-bold rounded-full hover:bg-white/10 hover:border-white/30 transition-all backdrop-blur-md uppercase tracking-wide text-xs flex items-center gap-2">
+                {lang === 'mn' ? 'Дэлгэрэнгүй' : 'Learn More'}
+                <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+             </button>
+          </motion.div>
+        </div>
+
+        {/* --- RIGHT: 3D MISSION CONTROL --- */}
+        <div className="relative">
+           <TiltCard>
+             <motion.div 
+                initial={{ opacity: 0, scale: 0.8, rotateY: 30 }}
+                animate={{ opacity: 1, scale: 1, rotateY: 0 }}
+                transition={{ delay: 0.5, duration: 1, type: "spring" }}
+                className="relative z-10 bg-[#001d30]/70 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] p-8 lg:p-10 shadow-2xl shadow-black/60"
+             >
+                {/* Header */}
+                <div className="flex justify-between items-end mb-8 border-b border-white/10 pb-6">
+                   <div>
+                      <h3 className="text-white text-3xl font-black tracking-tight">{lang === 'mn' ? 'Үйл Ажиллагаа' : 'Activities'}</h3>
+                      <p className="text-[#00aeef] text-xs uppercase tracking-[0.2em] mt-2 font-bold opacity-80">
+                          {lang === 'mn' ? 'Гол чиглэлүүд' : 'Core Pillars'}
+                      </p>
+                   </div>
+                   <div className="p-3 bg-[#00aeef]/10 rounded-2xl border border-[#00aeef]/20 animate-pulse-slow">
+                      <Globe className="text-[#00aeef]" size={36} strokeWidth={1.5} />
+                   </div>
+                </div>
+
+                {/* Info Cards List */}
+                <div className="space-y-4">
+                   {ACTIVITY_CARDS.map((card, idx) => (
+                      <InfoCard key={card.id} data={card} index={idx} lang={lang} />
+                   ))}
+                </div>
+
+                {/* Live Member Count Footer */}
+                <div className="mt-8 pt-6 border-t border-white/10 flex items-center justify-between">
+                   <div className="flex items-center gap-4">
+                      <div className="flex -space-x-3">
+                          {[...Array(4)].map((_, i) => (
+                             <div key={i} className="w-9 h-9 rounded-full bg-[#002b49] border-2 border-[#00aeef]/30 relative overflow-hidden">
+                                <div className="absolute inset-0 bg-gradient-to-br from-transparent to-black/30" />
+                             </div>
+                          ))}
+                          <div className="w-9 h-9 rounded-full bg-[#00aeef] border-2 border-[#001d30] flex items-center justify-center text-white text-[9px] font-black">
+                             +50
+                          </div>
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-white text-sm font-bold">Active Members</span>
+                        <span className="text-white/40 text-[10px] uppercase tracking-widest">Growing daily</span>
+                      </div>
+                   </div>
+                   <div className="h-2 w-2 rounded-full bg-green-500 shadow-[0_0_10px_#22c55e] animate-pulse" />
+                </div>
+             </motion.div>
+           </TiltCard>
+
+           {/* Floating Background Blobs behind Card */}
+           <div className="absolute -top-12 -right-12 w-64 h-64 bg-[#00aeef] rounded-full blur-[100px] opacity-20 -z-10 animate-pulse-slow" />
+           <div className="absolute -bottom-12 -left-12 w-64 h-64 bg-[#fbbf24] rounded-full blur-[100px] opacity-10 -z-10 animate-pulse-slow delay-1000" />
+        </div>
+      </div>
+
+      {/* 3. SCROLLING MARQUEE (Integrated Seamlessly) */}
+      <div className="absolute bottom-0 left-0 w-full z-20 border-t border-white/5 bg-[#00101a]/50 backdrop-blur-sm">
+        <motion.div 
+          animate={{ x: [0, -1000] }}
+          transition={{ repeat: Infinity, duration: 30, ease: "linear" }}
+          className="flex gap-16 py-4 items-center whitespace-nowrap"
+        >
+          {[...Array(8)].map((_, i) => (
+            <div key={i} className="flex items-center gap-16">
+              <span className="text-white/20 font-black uppercase text-3xl tracking-widest">
+                {lang === 'mn' ? "ХҮҮХДИЙН ТӨЛӨӨ" : "FOR EVERY CHILD"}
+              </span>
+              <span className="text-[#00aeef] text-xl">★</span>
+              <span className="text-white/20 font-black uppercase text-3xl tracking-widest">
+                {lang === 'mn' ? "ГЭРЭЛТ ИРЭЭДҮЙ" : "BRIGHT FUTURE"}
+              </span>
+              <span className="text-[#fbbf24] text-xl">●</span>
+            </div>
+          ))}
+        </motion.div>
+      </div>
+      
+    </section>
+  );
+}
