@@ -12,7 +12,7 @@ import {
   Loader2,
   AlertCircle
 } from "lucide-react";
-import { motion, AnimatePresence, cubicBezier } from "framer-motion";
+import { motion, AnimatePresence, cubicBezier, easeOut } from "framer-motion";
 import { useLanguage } from "../context/LanguageContext";
 import { useTheme } from "next-themes"; 
 
@@ -35,7 +35,7 @@ const textReveal = {
   hidden: { y: "100%" },
   visible: (i: number) => ({
     y: "0%",
-    transition: { delay: 0.2 + (i * 0.1), duration: 0.8, ease: "easeOut" }
+    transition: { delay: 0.2 + (i * 0.1), duration: 0.8, ease: easeOut }
   })
 };
 

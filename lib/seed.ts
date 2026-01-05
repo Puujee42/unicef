@@ -1,6 +1,10 @@
 import mongoose from "mongoose";
 import * as dotenv from "dotenv";
-import Event from "./models/Events"; // Adjust path if your models are elsewhere
+import Event from "./models/Events";
+import User from "./models/User";
+import Opportunity from "./models/Opportunity";
+import Club from "./models/Club";
+import News from "./models/News";
 
 // Load environment variables from .env.local
 dotenv.config({ path: ".env" });
@@ -23,18 +27,67 @@ const BRAND = {
   rose: "#f43f5e"  // Added for workshops
 };
 
-const seedEvents = async () => {
+const seedData = async () => {
   try {
     // 1. Connect to Database
     console.log("Connecting to MongoDB...");
     await mongoose.connect(MONGODB_URI);
     console.log("Connected!");
 
-    // 2. Clear existing events (Optional: remove this if you want to append)
-    console.log("Clearing existing events...");
-    await Event.deleteMany({});
+    // 2. Clear existing data
+    console.log("Clearing existing data...");
+    await Promise.all([
+      Event.deleteMany({}),
+      User.deleteMany({}),
+      Opportunity.deleteMany({}),
+      Club.deleteMany({}),
+      News.deleteMany({})
+    ]);
 
-    // 3. Define the Seed Data
+    // 3. Seed Users
+    console.log("Seeding users...");
+    const usersToInsert = [
+      // MNUMS Users
+      ...Array(5).fill(null).map((_, i) => ({
+        clerkId: `user_mnums_${i}`,
+        email: `mnums${i}@test.com`,
+        studentId: `MNUMS${202400 + i}`,
+        fullName: `MNUMS Student ${i}`,
+        university: "MNUMS",
+        role: "member"
+      })),
+      // NUM Users
+      ...Array(8).fill(null).map((_, i) => ({
+        clerkId: `user_num_${i}`,
+        email: `num${i}@test.com`,
+        studentId: `NUM${202400 + i}`,
+        fullName: `NUM Student ${i}`,
+        university: "NUM",
+        role: "member"
+      })),
+      // MUST Users
+      ...Array(3).fill(null).map((_, i) => ({
+        clerkId: `user_must_${i}`,
+        email: `must${i}@test.com`,
+        studentId: `MUST${202400 + i}`,
+        fullName: `MUST Student ${i}`,
+        university: "MUST",
+        role: "member"
+      })),
+      // UFE Users
+      ...Array(4).fill(null).map((_, i) => ({
+        clerkId: `user_ufe_${i}`,
+        email: `ufe${i}@test.com`,
+        studentId: `UFE${202400 + i}`,
+        fullName: `UFE Student ${i}`,
+        university: "UFE",
+        role: "member"
+      }))
+    ];
+    await User.insertMany(usersToInsert);
+
+    // 4. Seed Events
+    console.log("Seeding events...");
     const eventsToInsert = [
       {
         title: { 
@@ -45,7 +98,6 @@ const seedEvents = async () => {
           en: "Empowering the next generation of changemakers. Join 500+ students for a weekend of leadership workshops and networking.",
           mn: "Ирээдүйн өөрчлөлтийг бүтээгчдийг чадавхжуулах. 500+ оюутан залуус цугларч манлайллын ур чадварт суралцана."
         },
-        // Converted "24 OCT" to Date object
         date: new Date("2025-10-24T09:00:00.000Z"), 
         timeString: "09:00 - 18:00",
         location: { 
@@ -56,7 +108,7 @@ const seedEvents = async () => {
         category: "campaign",
         status: "upcoming",
         featured: true,
-        // Optional: If you updated your Event Schema to include color
+        university: "NUM",
         color: BRAND.sky 
       },
       {
@@ -68,7 +120,6 @@ const seedEvents = async () => {
           en: "Help us collect 1,000 books for rural schools in Khovd province. Bring your old textbooks and fiction books.",
           mn: "Ховд аймгийн хөдөөгийн сургуулиудад 1,000 ном цуглуулах аянд нэгдээрэй."
         },
-        // Converted "05 NOV" to Date
         date: new Date("2025-11-05T10:00:00.000Z"),
         timeString: "All Day",
         location: { 
@@ -79,6 +130,7 @@ const seedEvents = async () => {
         category: "fundraiser",
         status: "upcoming",
         featured: false,
+        university: "MNUMS",
         color: BRAND.white
       },
       {
@@ -90,7 +142,6 @@ const seedEvents = async () => {
           en: "A safe space to discuss student burnout and stress management techniques with professional psychologists.",
           mn: "Оюутны сэтгэл зүйн эрүүл мэнд, стресс менежментийн талаар мэргэжлийн сэтгэл зүйчтэй ярилцана."
         },
-        // Converted "12 NOV" to Date
         date: new Date("2025-11-12T14:00:00.000Z"),
         timeString: "14:00 - 16:00",
         location: { 
@@ -101,6 +152,7 @@ const seedEvents = async () => {
         category: "workshop",
         status: "upcoming",
         featured: false,
+        university: "MUST",
         color: BRAND.ocean
       },
       {
@@ -112,7 +164,6 @@ const seedEvents = async () => {
           en: "Distributing masks and air filters to kindergartens in the ger districts to protect children from pollution.",
           mn: "Гэр хорооллын цэцэрлэгүүдэд маск, агаар шүүгч тарааж бяцхан дүүсээ хамгаалах аян."
         },
-        // Converted "01 DEC" to Date
         date: new Date("2025-12-01T10:00:00.000Z"),
         timeString: "10:00 - 13:00",
         location: { 
@@ -123,13 +174,198 @@ const seedEvents = async () => {
         category: "campaign",
         status: "upcoming",
         featured: true,
+        university: "UFE",
         color: BRAND.sky
+      },
+      // PAST EVENT
+      {
+        title: { 
+          en: "Charity Run 2024", 
+          mn: "Хандивын Гүйлт 2024" 
+        },
+        description: {
+          en: "Annual charity run to raise awareness for children's rights.",
+          mn: "Хүүхдийн эрхийн төлөөх жил бүрийн хандивын гүйлт."
+        },
+        date: new Date("2024-05-15T09:00:00.000Z"),
+        timeString: "09:00 - 12:00",
+        location: { 
+          en: "National Park", 
+          mn: "Үндэсний Цэцэрлэгт Хүрээлэн" 
+        },
+        image: "https://images.unsplash.com/photo-1461301214746-1e790926d323?q=80&w=2070&auto=format&fit=crop",
+        category: "fundraiser",
+        status: "past",
+        featured: false,
+        university: "MNUMS",
+        color: BRAND.gold
       }
     ];
-
-    // 4. Insert Data
-    console.log(`Seeding ${eventsToInsert.length} events...`);
     await Event.insertMany(eventsToInsert);
+
+    // 5. Seed Opportunities
+    console.log("Seeding opportunities...");
+    const opportunitiesToInsert = [
+      {
+        type: "scholarship",
+        title: { en: "Global Health Scholarship", mn: "Дэлхийн Эрүүл Мэндийн Тэтгэлэг" },
+        provider: { en: "UNICEF Mongolia", mn: "ЮНИСЕФ Монгол" },
+        location: { en: "Ulaanbaatar", mn: "Улаанбаатар" },
+        deadline: "2025-03-30",
+        postedDate: "2025-01-01",
+        description: { 
+          en: "Supporting students committed to improving public health in rural areas.", 
+          mn: "Орон нутгийн нийгмийн эрүүл мэндийг сайжруулахад хувь нэмэр оруулах хүсэлтэй оюутнуудад зориулав." 
+        },
+        requirements: {
+          en: ["GPA 3.5+", "Essay on rural health", "Reference letter"],
+          mn: ["Голч дүн 3.5+", "Хөдөөгийн эрүүл мэндийн талаар эссэ", "Тодорхойлолт захидал"]
+        },
+        tags: ["Health", "Public", "Grant"],
+        link: "https://www.unicef.org/mongolia",
+        image: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?q=80&w=2070&auto=format&fit=crop"
+      },
+      {
+        type: "internship",
+        title: { en: "Social Media Marketing Intern", mn: "Сошиал Медиа Маркетингийн Дадлагажигч" },
+        provider: { en: "Save the Children", mn: "Хүүхдийг Ивээх Сан" },
+        location: { en: "Remote / Ulaanbaatar", mn: "Зайнаас / Улаанбаатар" },
+        deadline: "2025-02-15",
+        postedDate: "2025-01-05",
+        description: { 
+          en: "Gain experience in non-profit communication and advocacy.", 
+          mn: "Ашгийн бус байгууллагын харилцаа холбоо, нөлөөллийн ажилд туршлага хуримтлуулах боломж." 
+        },
+        requirements: {
+          en: ["Strong writing skills", "Basic graphic design", "English proficiency"],
+          mn: ["Бичгийн ур чадвар сайн", "График дизайны анхан шатны мэдлэгтэй", "Англи хэлний мэдлэгтэй"]
+        },
+        tags: ["Marketing", "Social", "NGO"],
+        link: "https://mongolia.savethechildren.net/",
+        image: "https://images.unsplash.com/photo-1531482615713-2afd69097998?q=80&w=2070&auto=format&fit=crop"
+      },
+      {
+        type: "volunteer",
+        title: { en: "Youth Health Ambassador", mn: "Залуучуудын Эрүүл Мэндийн Элч" },
+        provider: { en: "MNUMS UNICEF Club", mn: "АШУҮИС ЮНИСЕФ Клуб" },
+        location: { en: "Universities", mn: "Их дээд сургуулиуд" },
+        deadline: "2025-01-20",
+        postedDate: "2024-12-25",
+        description: { 
+          en: "Promote healthy lifestyle choices among university peers.", 
+          mn: "Их сургуулийн оюутнуудын дунд эрүүл амьдралын хэв маягийг сурталчлах." 
+        },
+        requirements: {
+          en: ["Active student", "Passion for health", "Communication skills"],
+          mn: ["Идэвхтэй оюутан", "Эрүүл мэндийн төлөөх хүсэл эрмэлзэл", "Харилцааны ур чадвар"]
+        },
+        tags: ["Youth", "Health", "Leadership"],
+        link: "#",
+        image: "https://images.unsplash.com/photo-1559027615-cd4628902d4a?q=80&w=2074&auto=format&fit=crop"
+      }
+    ];
+    await Opportunity.insertMany(opportunitiesToInsert);
+
+    // 6. Seed Clubs
+    console.log("Seeding clubs...");
+    const clubsToInsert = [
+      {
+        clubId: "MNUMS",
+        name: { en: "Mongolian National University of Medical Sciences", mn: "Эрүүл Мэндийн Шинжлэх Ухааны Их Сургууль (ЭМШУИС)" },
+        description: {
+          en: "The leading medical university in Mongolia, fostering the next generation of healthcare professionals.",
+          mn: "Монгол улсын анагаах ухааны тэргүүлэх их сургууль, ирээдүйн эрүүл мэндийн мэргэжилтнүүдийг бэлтгэдэг."
+        },
+        website: "https://mnums.edu.mn/",
+        email: "info@mnums.edu.mn",
+        image: "https://images.unsplash.com/photo-1626125345510-470341582301?q=80&w=2070&auto=format&fit=crop"
+      },
+      {
+        clubId: "NUM",
+        name: { en: "National University of Mongolia", mn: "Монгол Улсын Их Сургууль (МУИС)" },
+        description: {
+          en: "The oldest and most prestigious university in Mongolia, known for its research and academic excellence.",
+          mn: "Судалгаа, эрдэм шинжилгээний ажлаараа алдартай, Монголын хамгийн ууган, нэр хүндтэй их сургууль."
+        },
+        website: "https://www.num.edu.mn/",
+        email: "contact@num.edu.mn",
+        image: "https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?q=80&w=1978&auto=format&fit=crop"
+      },
+      {
+        clubId: "MUST",
+        name: { en: "Mongolian University of Science and Technology", mn: "Шинжлэх Ухаан, Технологийн Их Сургууль (ШУТИС)" },
+        description: {
+          en: "A hub for engineering and technological innovation in Mongolia.",
+          mn: "Инженерчлэл, технологийн инновацийн төв."
+        },
+        website: "https://www.must.edu.mn/",
+        email: "info@must.edu.mn",
+        image: "https://images.unsplash.com/photo-1581093458791-9f3c3900df4b?q=80&w=2070&auto=format&fit=crop"
+      },
+      {
+        clubId: "UFE",
+        name: { en: "University of Finance and Economics", mn: "Санхүү, Эдийн Засгийн Их Сургууль (СЭЗИС)" },
+        description: {
+          en: "Specializing in economics, business, and finance education.",
+          mn: "Эдийн засаг, бизнес, санхүүгийн боловсролоор мэргэшсэн."
+        },
+        website: "https://www.ufe.edu.mn/",
+        email: "info@ufe.edu.mn",
+        image: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?q=80&w=2026&auto=format&fit=crop"
+      }
+    ];
+    await Club.insertMany(clubsToInsert);
+
+    // 7. Seed News
+    console.log("Seeding news...");
+    const newsToInsert = [
+      {
+        title: { en: "UNICEF Launches New Youth Strategy", mn: "ЮНИСЕФ Залуучуудын Шинэ Стратегиа Танилцууллаа" },
+        summary: { 
+          en: "A new framework to empower young people across Mongolia.", 
+          mn: "Монгол даяар залуучуудыг чадавхжуулах шинэ тогтолцоо." 
+        },
+        content: { 
+          en: "Today, UNICEF Mongolia unveiled its comprehensive 5-year strategy focused on adolescent health, climate action, and digital skills. The launch event was attended by government officials and youth representatives.", 
+          mn: "Өнөөдөр ЮНИСЕФ Монгол өсвөр үеийнхний эрүүл мэнд, уур амьсгалын өөрчлөлт, дижитал ур чадварт чиглэсэн 5 жилийн цогц стратегиа танилцууллаа. Нээлтийн үйл ажиллагаанд төрийн албан хаагчид болон залуучуудын төлөөлөл оролцов." 
+        },
+        author: "Admin",
+        image: "https://images.unsplash.com/photo-1529070538774-1843cb3265df?q=80&w=2070&auto=format&fit=crop",
+        tags: ["Strategy", "Youth", "UNICEF"],
+        featured: true
+      },
+      {
+        title: { en: "Student Club wins Innovation Award", mn: "Оюутны Клуб Инновацийн Шагнал Хүртлээ" },
+        summary: { 
+          en: "MUST UNICEF Club recognized for their air pollution project.", 
+          mn: "ШУТИС-ийн ЮНИСЕФ Клуб агаарын бохирдлын төслөөрөө шалгарлаа." 
+        },
+        content: { 
+          en: "The student-led team developed a low-cost air filtration system for ger district kindergartens. They were awarded the 'Green Innovation' prize at the National Youth Tech Fair.", 
+          mn: "Оюутнуудын баг гэр хорооллын цэцэрлэгүүдэд зориулсан хямд өртөгтэй агаар шүүгч системийг хөгжүүлжээ. Тэд Үндэсний Залуучуудын Технологийн Үзэсгэлэнгээс 'Ногоон Инноваци' шагнал хүртлээ." 
+        },
+        author: "Admin",
+        image: "https://images.unsplash.com/photo-1531545514256-b1400bc00f31?q=80&w=1974&auto=format&fit=crop",
+        tags: ["Innovation", "Awards", "Environment"],
+        featured: false
+      },
+      {
+        title: { en: "Volunteer Highlights: October", mn: "Сайн Дурынхны Амжилт: 10-р сар" },
+        summary: { 
+          en: "Celebrating the contributions of our dedicated members.", 
+          mn: "Манай идэвхтэй гишүүдийн хувь нэмрийг тэмдэглэж байна." 
+        },
+        content: { 
+          en: "This month, over 500 volunteers participated in our 'Clean Streets' campaign. We collected 2 tons of recyclable waste and planted 50 trees in the city center.", 
+          mn: "Энэ сард манай 'Цэвэр Гудамж' аянд 500 гаруй сайн дурынхан оролцлоо. Бид 2 тонн дахин боловсруулах хог хаягдал цуглуулж, хотын төвд 50 мод тарьсан." 
+        },
+        author: "Admin",
+        image: "https://images.unsplash.com/photo-1559027615-cd4628902d4a?q=80&w=2074&auto=format&fit=crop",
+        tags: ["Community", "Volunteers"],
+        featured: false
+      }
+    ];
+    await News.insertMany(newsToInsert);
 
     console.log("✅ Database seeded successfully!");
     
@@ -143,4 +379,4 @@ const seedEvents = async () => {
   }
 };
 
-seedEvents();
+seedData();

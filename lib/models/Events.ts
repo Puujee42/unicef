@@ -22,6 +22,7 @@ const EventSchema = new Schema(
         enum: ['campaign', 'workshop', 'fundraiser', 'meeting'],
         required: true 
     },
+    university: { type: String, required: true, default: "MNUMS" },
     status: { 
         type: String, 
         enum: ['upcoming', 'past', 'cancelled'], 
