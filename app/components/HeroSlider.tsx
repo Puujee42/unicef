@@ -1,305 +1,215 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
-import Image from "next/image";
+import React, { useRef, useEffect, useState } from "react";
 import Link from "next/link";
 import { 
   ArrowRight, 
-  MapPin, 
-  Calendar, 
-  ChevronLeft, 
-  ChevronRight, 
-  Loader2,
-  AlertCircle
+  Play, 
+  Users, 
+  Globe, 
+  Heart, 
+  Sparkles,
+  ChevronRight
 } from "lucide-react";
-import { motion, AnimatePresence, cubicBezier, easeOut } from "framer-motion";
+import { 
+  motion, 
+  useScroll, 
+  useTransform, 
+  useSpring, 
+  useMotionValue 
+} from "framer-motion";
 import { useLanguage } from "../context/LanguageContext";
-import { useTheme } from "next-themes"; 
+import { useTheme } from "next-themes";
 
-// --- ANIMATION CONFIG ---
-const SLIDE_DURATION = 8000;
+// --- CONFIG ---
+const IMPACT_STATS = [
+  { id: 1, label: { en: "Active Members", mn: "Идэвхтэй гишүүд" }, value: "500+", icon: Users },
+  { id: 2, label: { en: "Projects", mn: "Төслүүд" }, value: "12+", icon: Sparkles },
+  { id: 3, label: { en: "Impacted Lives", mn: "Хүрсэн хүүхдүүд" }, value: "2.4k", icon: Heart },
+];
 
-const maskVariants = {
-  initial: { clipPath: "inset(0 0 0 100%)" },
-  animate: { 
-    clipPath: "inset(0 0 0 0%)",
-    transition: { duration: 1.2, ease: cubicBezier(0.22, 1, 0.36, 1) } 
-  },
-  exit: { 
-    clipPath: "inset(0 100% 0 0)",
-    transition: { duration: 0.8, ease: cubicBezier(0.22, 1, 0.36, 1) } 
-  }
-};
-
-const textReveal = {
-  hidden: { y: "100%" },
-  visible: (i: number) => ({
-    y: "0%",
-    transition: { delay: 0.2 + (i * 0.1), duration: 0.8, ease: easeOut }
-  })
-};
-
-export default function HeroSlider() {
+export default function CinematicHero() {
   const { language: lang } = useLanguage();
   const { theme } = useTheme();
-  const isDark = theme === 'dark' || !theme;
+  const isDark = theme === "dark" || !theme;
+  const [mounted, setMounted] = useState(false);
 
-  const [events, setEvents] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [index, setIndex] = useState(0);
+  // Mouse Parallax Effect
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+  const springX = useSpring(mouseX, { stiffness: 50, damping: 20 });
+  const springY = useSpring(mouseY, { stiffness: 50, damping: 20 });
 
-  // --- FETCH DATA ---
   useEffect(() => {
-    async function fetchEvents() {
-      try {
-        console.log("HeroSlider: Fetching events...");
-        const res = await fetch('/api/admin/events'); 
-        
-        if (res.ok) {
-          const data = await res.json();
-          console.log("HeroSlider: Raw Data Received:", data);
-
-          // 1. Filter only 'upcoming' (Removed strictly future date check for debugging)
-          const activeEvents = data
-            .filter((e: any) => e.status === 'upcoming')
-            .slice(0, 5); // Take top 5
-
-          console.log("HeroSlider: Filtered Events:", activeEvents);
-          setEvents(activeEvents);
-        } else {
-          console.error("HeroSlider API Error:", res.statusText);
-        }
-      } catch (error) {
-        console.error("HeroSlider Network Error:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchEvents();
+    setMounted(true);
+    const handleMouseMove = (e: MouseEvent) => {
+      const { clientX, clientY } = e;
+      const moveX = (clientX - window.innerWidth / 2) / 50;
+      const moveY = (clientY - window.innerHeight / 2) / 50;
+      mouseX.set(moveX);
+      mouseY.set(moveY);
+    };
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
-  // --- SLIDER LOGIC ---
-  const nextSlide = useCallback(() => {
-    if (events.length > 0) {
-      setIndex((prev) => (prev + 1) % events.length);
-    }
-  }, [events.length]);
-
-  const prevSlide = () => {
-    if (events.length > 0) {
-      setIndex((prev) => (prev === 0 ? events.length - 1 : prev - 1));
-    }
-  };
-
-  useEffect(() => {
-    if (events.length === 0) return;
-    const timer = setTimeout(nextSlide, SLIDE_DURATION);
-    return () => clearTimeout(timer);
-  }, [index, nextSlide, events.length]);
-
-  // --- LOADING STATE ---
-  if (loading) return (
-    <div className={`h-[90vh] flex items-center justify-center transition-colors duration-500 ${isDark ? 'bg-black text-[#00aeef]' : 'bg-white text-sky-600'}`}>
-        <div className="flex flex-col items-center gap-4">
-            <Loader2 className="w-10 h-10 animate-spin" />
-            <p className="text-xs font-bold uppercase tracking-widest opacity-60">Loading Events...</p>
-        </div>
-    </div>
-  );
-
-  // --- EMPTY STATE (Shows instructions instead of blank screen) ---
-  if (events.length === 0) return (
-    <div className={`h-[85vh] flex flex-col items-center justify-center transition-colors duration-500 text-center px-4 ${isDark ? 'bg-[#001829] text-white' : 'bg-slate-50 text-slate-900'}`}>
-        <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mb-6 border border-white/10">
-           <AlertCircle size={32} className="text-[#00aeef]" />
-        </div>
-        <h2 className="text-3xl font-black mb-2">No Upcoming Events Found</h2>
-        <p className={`max-w-md mb-8 ${isDark ? 'text-white/50' : 'text-slate-500'}`}>
-           Go to the <strong>Admin Dashboard</strong> to create your first event, or check your database connection.
-        </p>
-        <Link href="/admin" className="px-8 py-3 bg-[#00aeef] text-white font-bold rounded-full text-xs uppercase tracking-widest hover:bg-[#009bd5] transition-colors">
-            Go to Admin
-        </Link>
-    </div>
-  );
-
-  const event = events[index];
-  
-  // Format Date Helper
-  const formatDate = (dateString: string) => {
-    if (!dateString) return "TBD";
-    const d = new Date(dateString);
-    return d.toLocaleDateString(lang === 'mn' ? 'mn-MN' : 'en-US', { month: 'short', day: 'numeric' });
-  };
+  if (!mounted) return null;
 
   return (
-    <div className={`relative h-[90vh] w-full overflow-hidden font-sans transition-colors duration-700 ${isDark ? 'bg-black' : 'bg-white'}`}>
+    <section className="relative h-screen w-full overflow-hidden flex items-center justify-center">
       
-      {/* 1. BACKGROUND IMAGE SLIDER */}
-      <AnimatePresence mode="popLayout" initial={false}>
-        <motion.div
-          key={event._id}
-          variants={maskVariants}
-          initial="initial"
-          animate="animate"
-          exit="exit"
-          className="absolute inset-0 z-0 h-full w-full"
+      {/* 1. VIDEO BACKGROUND ENGINE */}
+      <div className="absolute inset-0 z-0">
+        <div className={`absolute inset-0 z-10 transition-colors duration-1000 
+          ${isDark 
+            ? "bg-black/60 bg-gradient-to-b from-black/40 via-transparent to-black" 
+            : "bg-white/40 bg-gradient-to-b from-white/20 via-transparent to-white"}`} 
+        />
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          className="h-full w-full object-cover scale-105"
+          poster="/video-poster.jpg" // Fallback image
         >
-          {/* Overlay */}
-          <div className={`absolute inset-0 z-10 transition-colors duration-500 
-             ${isDark 
-               ? "bg-black/40 bg-gradient-to-t from-black/90 via-black/20 to-transparent" 
-               : "bg-white/10 bg-gradient-to-t from-white/90 via-white/10 to-transparent"}`} 
-          />
-          
-          <motion.div 
-            className="relative w-full h-full"
-            initial={{ scale: 1.2 }}
-            animate={{ scale: 1 }}
-            transition={{ duration: 10, ease: "linear" }}
-          >
-            <Image
-              src={event.image || "/fallback-event.jpg"} // Ensure this file exists in /public or use external URL
-              alt={event.title[lang] || event.title.en}
-              fill
-              className="object-cover"
-              priority
-            />
-          </motion.div>
-        </motion.div>
-      </AnimatePresence>
-
-      {/* 2. MAIN CONTENT */}
-      <div className="absolute inset-0 z-20 flex flex-col justify-center px-6 md:px-12 lg:px-24">
-        <div className="max-w-5xl overflow-hidden">
-          
-          {/* Tagline */}
-          <div className="overflow-hidden mb-4">
-            <motion.div 
-              custom={0}
-              variants={textReveal}
-              initial="hidden"
-              key={`sub-${event._id}`}
-              animate="visible"
-              className="flex items-center gap-3"
-            >
-              <span className={`h-[2px] w-12 ${isDark ? 'bg-[#00aeef]' : 'bg-sky-600'}`} />
-              <span className={`uppercase tracking-[0.3em] text-sm font-bold ${isDark ? 'text-[#00aeef]' : 'text-sky-700'}`}>
-                 {event.category}
-              </span>
-            </motion.div>
-          </div>
-
-          {/* Title */}
-          <div className="overflow-hidden">
-            <motion.h1
-              custom={1}
-              variants={textReveal}
-              initial="hidden"
-              key={`title-${event._id}`}
-              animate="visible"
-              className={`text-5xl md:text-7xl lg:text-8xl font-black leading-[0.95] tracking-tight mb-6 drop-shadow-xl 
-                 ${isDark ? 'text-white' : 'text-slate-900'}`}
-            >
-              {event.title[lang] || event.title.en}
-            </motion.h1>
-          </div>
-
-          {/* Description */}
-          <div className="overflow-hidden mb-10">
-            <motion.p
-              custom={2}
-              variants={textReveal}
-              initial="hidden"
-              key={`desc-${event._id}`}
-              animate="visible"
-              className={`text-lg md:text-xl font-light max-w-xl leading-relaxed 
-                 ${isDark ? 'text-white/80' : 'text-slate-800 font-medium'}`}
-            >
-               {event.description[lang] || event.description.en}
-            </motion.p>
-          </div>
-
-          {/* Data Bar */}
-          <div className="overflow-hidden">
-            <motion.div
-              custom={3}
-              variants={textReveal}
-              initial="hidden"
-              key={`meta-${event._id}`}
-              animate="visible"
-              className={`flex flex-wrap gap-6 items-center pt-8 border-t 
-                 ${isDark ? 'border-white/20' : 'border-slate-900/10'}`}
-            >
-              <div className="flex items-center gap-3">
-                <div className={`p-3 rounded-full backdrop-blur-md border transition-colors 
-                   ${isDark ? 'bg-white/10 border-white/10 text-white' : 'bg-white/60 border-slate-200 text-slate-900'}`}>
-                  <Calendar size={20} className={`${isDark ? 'text-[#00aeef]' : 'text-sky-600'}`} />
-                </div>
-                <div>
-                  <p className={`text-[10px] uppercase tracking-widest font-bold ${isDark ? 'text-white/50' : 'text-slate-500'}`}>Date</p>
-                  <p className={`font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>{formatDate(event.date)}</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <div className={`p-3 rounded-full backdrop-blur-md border transition-colors 
-                   ${isDark ? 'bg-white/10 border-white/10 text-white' : 'bg-white/60 border-slate-200 text-slate-900'}`}>
-                  <MapPin size={20} className={`${isDark ? 'text-[#00aeef]' : 'text-sky-600'}`} />
-                </div>
-                <div>
-                  <p className={`text-[10px] uppercase tracking-widest font-bold ${isDark ? 'text-white/50' : 'text-slate-500'}`}>Location</p>
-                  <p className={`font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>{event.location[lang] || event.location.en}</p>
-                </div>
-              </div>
-
-              <Link href={`/events/${event._id}`}>
-                <motion.button 
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className={`px-8 py-3 font-black uppercase tracking-widest text-xs rounded-full flex items-center gap-2 transition-colors duration-300 ml-4 shadow-lg
-                     ${isDark 
-                        ? 'bg-white text-black hover:bg-[#00aeef] hover:text-white' 
-                        : 'bg-slate-900 text-white hover:bg-sky-600'}`}
-                >
-                   {lang === 'mn' ? 'Дэлгэрэнгүй' : 'Details'} <ArrowRight size={14} />
-                </motion.button>
-              </Link>
-            </motion.div>
-          </div>
-
-        </div>
+          {/* REPLACE THIS URL WITH YOUR ACTUAL VIDEO LINK */}
+          <source src="/A_clean_modern_1080p_202601052236.mp4" type="video/mp4" />
+        </video>
       </div>
 
-      {/* 3. PROGRESS BAR */}
-      <div className="absolute bottom-0 left-0 w-full z-30 flex items-end justify-between p-8 md:p-12">
-        <div className="flex-1 flex gap-2 max-w-md items-end h-full pb-4">
-          {events.map((_, i) => (
-            <div key={i} className={`relative flex-1 h-[3px] overflow-hidden rounded-full ${isDark ? 'bg-white/20' : 'bg-slate-300'}`}>
-              {i === index && (
-                <motion.div
-                  layoutId="activeSlide"
-                  className={`absolute inset-0 ${isDark ? 'bg-[#00aeef]' : 'bg-sky-600'}`}
-                  initial={{ width: "0%" }}
-                  animate={{ width: "100%" }}
-                  transition={{ duration: SLIDE_DURATION / 1000, ease: "linear" }}
-                />
+      {/* 2. MAIN CINEMATIC CONTENT */}
+      <motion.div 
+        style={{ x: springX, y: springY }}
+        className="relative z-20 w-full max-w-7xl mx-auto px-6 md:px-12 flex flex-col items-start"
+      >
+        
+        {/* Dynamic Status Badge */}
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className={`flex items-center gap-2 px-4 py-2 rounded-full border mb-8 backdrop-blur-md
+            ${isDark ? "bg-white/5 border-white/10 text-white" : "bg-black/5 border-black/10 text-black"}`}
+        >
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00aeef] opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-[#00aeef]"></span>
+          </span>
+          <span className="text-[10px] font-black uppercase tracking-[0.3em]">
+            {lang === 'mn' ? "ШУУД: ХҮҮХЭД БҮРИЙН ТӨЛӨӨ" : "LIVE: FOR EVERY CHILD"}
+          </span>
+        </motion.div>
+
+        {/* Informative Headline */}
+        <div className="max-w-4xl">
+          <motion.h1 
+            initial={{ clipPath: "inset(0 100% 0 0)" }}
+            animate={{ clipPath: "inset(0 0% 0 0)" }}
+            transition={{ duration: 1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            className={`text-6xl md:text-8xl lg:text-9xl font-black tracking-tighter leading-[0.85] mb-8
+              ${isDark ? "text-white" : "text-slate-900"}`}
+          >
+            ACTING FOR <br /> 
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00aeef] to-[#40c9ff]">
+              TOMORROW
+            </span>
+          </motion.h1>
+
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.5 }}
+            className={`text-lg md:text-2xl font-medium max-w-2xl leading-relaxed mb-12
+              ${isDark ? "text-white/60" : "text-slate-700"}`}
+          >
+            {lang === 'mn' 
+              ? "Монголын залуучуудын нэгдэл. Бид хүүхдийн эрх, сайн сайхны төлөө бодит өөрчлөлтийг хамтдаа бүтээж байна."
+              : "A movement of Mongolian students. Join us in creating tangible change for child rights and welfare nationwide."}
+          </motion.p>
+        </div>
+
+        {/* Action Group */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.7 }}
+          className="flex flex-wrap gap-4 items-center"
+        >
+          <Link href="/join">
+            <button className="px-10 py-5 bg-[#00aeef] hover:bg-[#009bd5] text-white rounded-full font-black uppercase tracking-widest text-xs shadow-2xl shadow-[#00aeef]/40 transition-all hover:scale-105 active:scale-95 flex items-center gap-3">
+              {lang === 'mn' ? "Одоо нэгдэх" : "Join Movement"}
+              <ArrowRight size={18} />
+            </button>
+          </Link>
+          
+          <Link href="/about">
+            <button className={`px-10 py-5 rounded-full font-black uppercase tracking-widest text-xs transition-all border flex items-center gap-3
+              ${isDark 
+                ? "bg-white/5 border-white/10 text-white hover:bg-white/10" 
+                : "bg-black/5 border-black/10 text-black hover:bg-black/10"}`}>
+              {lang === 'mn' ? "Бидний түүх" : "Our Story"}
+              <Play size={16} fill="currentColor" />
+            </button>
+          </Link>
+        </motion.div>
+
+      </motion.div>
+
+      {/* 3. FLOATING IMPACT DASHBOARD (Informative Layer) */}
+      <motion.div 
+        initial={{ y: 100, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 1, delay: 1, ease: "circOut" }}
+        className="absolute bottom-12 left-0 right-0 z-30 px-6"
+      >
+        <div className={`max-w-5xl mx-auto backdrop-blur-2xl border rounded-[2.5rem] p-4 md:p-8 flex flex-col md:flex-row items-center justify-between gap-8
+          ${isDark 
+            ? "bg-white/5 border-white/10 shadow-black/50" 
+            : "bg-black/5 border-black/10 shadow-slate-200/50"}`}
+        >
+          {IMPACT_STATS.map((stat, i) => (
+            <div key={stat.id} className="flex items-center gap-4 group">
+              <div className={`p-4 rounded-2xl transition-colors
+                ${isDark ? "bg-white/5 group-hover:bg-[#00aeef]/20" : "bg-black/5 group-hover:bg-[#00aeef]/10"}`}>
+                <stat.icon size={24} className="text-[#00aeef]" />
+              </div>
+              <div className="flex flex-col">
+                <span className={`text-2xl font-black ${isDark ? "text-white" : "text-slate-900"}`}>
+                  {stat.value}
+                </span>
+                <span className={`text-[10px] font-bold uppercase tracking-widest opacity-50 ${isDark ? "text-white" : "text-black"}`}>
+                  {stat.label[lang]}
+                </span>
+              </div>
+              {i < IMPACT_STATS.length - 1 && (
+                <div className={`hidden lg:block h-10 w-px mx-8 ${isDark ? "bg-white/10" : "bg-black/10"}`} />
               )}
-              {i < index && <div className={`absolute inset-0 ${isDark ? 'bg-white' : 'bg-slate-800'}`} />}
             </div>
           ))}
-        </div>
 
-        <div className="flex gap-4 ml-8">
-          <button onClick={prevSlide} className={`w-14 h-14 rounded-full border flex items-center justify-center transition-all hover:scale-110 active:scale-95 ${isDark ? 'border-white/20 text-white hover:bg-white hover:text-black' : 'border-slate-300 text-slate-900 hover:bg-slate-900 hover:text-white'}`}>
-            <ChevronLeft size={24} />
-          </button>
-          <button onClick={nextSlide} className={`w-14 h-14 rounded-full border flex items-center justify-center transition-all hover:scale-110 active:scale-95 ${isDark ? 'border-white/20 text-white hover:bg-white hover:text-black' : 'border-slate-300 text-slate-900 hover:bg-slate-900 hover:text-white'}`}>
-            <ChevronRight size={24} />
-          </button>
+          <div className="md:ml-4">
+             <Link href="/impact" className="group flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-[#00aeef] hover:underline">
+                {lang === 'mn' ? "БҮХ ҮР ДҮНГ ҮЗЭХ" : "FULL REPORT"}
+                <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
+             </Link>
+          </div>
         </div>
+      </motion.div>
+
+      {/* Side Decorative Element (Vertical Text) */}
+      <div className={`hidden xl:block absolute right-12 top-1/2 -translate-y-1/2 vertical-text font-black text-[10px] uppercase tracking-[1em] opacity-20 transition-colors
+        ${isDark ? "text-white" : "text-black"}`}>
+        UNICEF STUDENT CLUB • MONGOLIA • 2024
       </div>
 
-    </div>
+      <style jsx>{`
+        .vertical-text {
+          writing-mode: vertical-rl;
+          text-orientation: mixed;
+        }
+      `}</style>
+
+    </section>
   );
 }

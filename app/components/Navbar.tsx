@@ -77,14 +77,15 @@ export default function Navbar() {
       {/* ========================================================= */}
       <motion.header 
         className="fixed z-50 left-0 right-0 hidden lg:flex justify-center pointer-events-none"
-        animate={{ y: isScrolled ? 15 : 0 }}
+        animate={{ y: isScrolled ? 15 : 10 }}
         transition={{ type: "spring", stiffness: 200, damping: 25 }}
       >
         <nav className={`
           pointer-events-auto flex items-center justify-between transition-all duration-700
+          rounded-full border backdrop-blur-2xl
           ${isScrolled 
-            ? "w-[95%] lg:w-[1200px] py-3 px-8 rounded-full border backdrop-blur-2xl shadow-2xl" 
-            : "w-full max-w-[1500px] py-8 px-12 bg-transparent border-transparent"}
+            ? "w-[95%] lg:w-[1200px] py-3 px-8 shadow-2xl" 
+            : "w-[98%] max-w-[1400px] py-5 px-12 bg-transparent border-transparent shadow-none"}
           ${isDark 
             ? "bg-[#00101a]/80 border-sky-900/40 text-sky-50 shadow-black" 
             : "bg-white/80 border-sky-100 text-[#001829] shadow-sky-900/10"}
