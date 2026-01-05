@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { 
@@ -11,224 +11,238 @@ import {
   Mail, 
   MapPin, 
   Send, 
-  Heart 
+  Heart,
+  Sparkles,
+  ChevronRight
 } from "lucide-react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
+import { useTheme } from "next-themes";
 import { useLanguage } from "../context/LanguageContext";
 
-// --- BRAND CONFIG ---
-const BRAND = {
-  sky: "#00aeef",
-  white: "#ffffff",
-  navy: "#001829",
-  card: "rgba(255, 255, 255, 0.05)",
-};
-
+// --- CONFIG ---
 const LINKS = {
   about: [
     { label: { en: "Our Story", mn: "Бидний тухай" }, href: "/about" },
     { label: { en: "Team", mn: "Баг хамт олон" }, href: "/team" },
-    { label: { en: "Careers", mn: "Ажлын байр" }, href: "/careers" },
+    { label: { en: "Impact", mn: "Үр нөлөө" }, href: "/impact" },
   ],
   action: [
     { label: { en: "Donate", mn: "Хандив өгөх" }, href: "/donate" },
     { label: { en: "Volunteer", mn: "Сайн дурын ажил" }, href: "/join" },
     { label: { en: "Events", mn: "Арга хэмжээ" }, href: "/events" },
   ],
-  legal: [
-    { label: { en: "Privacy Policy", mn: "Нууцлалын бодлого" }, href: "/privacy" },
-    { label: { en: "Terms of Use", mn: "Үйлчилгээний нөхцөл" }, href: "/terms" },
-  ]
 };
 
 const SOCIALS = [
-  { icon: Facebook, href: "https://facebook.com", color: "#1877F2" },
-  { icon: Instagram, href: "https://instagram.com", color: "#E4405F" },
-  { icon: Twitter, href: "https://twitter.com", color: "#1DA1F2" },
+  { icon: Facebook, href: "https://facebook.com", label: "Facebook" },
+  { icon: Instagram, href: "https://instagram.com", label: "Instagram" },
+  { icon: Twitter, href: "https://twitter.com", label: "Twitter" },
 ];
 
 export default function Footer() {
   const { language: lang } = useLanguage();
+  const { theme } = useTheme();
+  const [mounted, setMounted] = useState(false);
   const { scrollYProgress } = useScroll();
   
-  // Parallax effect for the big watermark text
-  const yText = useTransform(scrollYProgress, [0.5, 1], [0, -100]);
+  // Parallax for the giant background text
+  const yText = useTransform(scrollYProgress, [0.8, 1], [100, 0]);
+
+  useEffect(() => setMounted(true), []);
+  if (!mounted) return null;
+
+  const isDark = theme === "dark" || !theme;
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   return (
-    <footer className="relative bg-[#001829] pt-24 pb-8 overflow-hidden text-white border-t border-white/5">
+    <footer className={`relative w-full overflow-hidden transition-colors duration-700 
+      ${isDark ? "bg-[#00101a]" : "bg-slate-50"}`}>
       
-      {/* 1. BACKGROUND ATMOSPHERE */}
-      <div className="absolute inset-0 pointer-events-none">
-         {/* Deep Glow Bottom */}
-         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[80vw] h-[500px] bg-[#00aeef] rounded-full blur-[200px] opacity-[0.08]" />
-         
-         {/* Noise Texture */}
-         <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }} />
-         
-         {/* Grid Lines */}
-         <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:6rem_6rem]" />
+      {/* 1. NEWSLETTER BRIDGE SECTION */}
+      <div className="relative z-20 max-w-7xl mx-auto px-6 -mb-16">
+        <motion.div 
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className={`relative p-1 rounded-[3rem] overflow-hidden shadow-2xl transition-all duration-500
+            ${isDark 
+              ? "bg-gradient-to-br from-[#00aeef]/30 to-transparent border border-white/10" 
+              : "bg-gradient-to-br from-[#00aeef]/10 to-transparent border border-sky-100"}`}
+        >
+          {/* Glass Effect Inner */}
+          <div className={`relative z-10 p-8 md:p-12 rounded-[2.9rem] backdrop-blur-3xl flex flex-col lg:flex-row items-center justify-between gap-10
+            ${isDark ? "bg-[#001829]/80" : "bg-white/90"}`}>
+            
+            <div className="max-w-xl text-center lg:text-left">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#00aeef]/10 text-[#00aeef] text-[10px] font-black uppercase tracking-widest mb-4">
+                <Sparkles size={12} fill="currentColor" />
+                {lang === 'mn' ? "Шинэ мэдээ" : "Newsletter"}
+              </div>
+              <h2 className={`text-3xl md:text-5xl font-black tracking-tighter leading-none mb-4
+                ${isDark ? "text-white" : "text-[#001829]"}`}>
+                {lang === 'mn' ? "Өөрчлөлтийн нэг хэсэг бол" : "Be the Change You Want to See"}
+              </h2>
+              <p className={`text-lg font-medium opacity-60 ${isDark ? "text-white" : "text-slate-600"}`}>
+                {lang === 'mn' 
+                  ? "Долоо хоног бүр клубын үйл ажиллагааны мэдээллийг и-мэйлээр аваарай." 
+                  : "Join our community and get weekly updates on impact, events, and stories."}
+              </p>
+            </div>
+
+            <div className="w-full lg:w-auto">
+              <form className="relative flex flex-col sm:flex-row gap-3 min-w-[320px] sm:min-w-[450px]">
+                <input 
+                  type="email" 
+                  placeholder={lang === 'mn' ? "И-мэйл хаяг" : "Your email address"}
+                  className={`flex-1 px-6 py-5 rounded-2xl text-sm font-bold transition-all focus:outline-none focus:ring-2 focus:ring-[#00aeef]
+                    ${isDark 
+                      ? "bg-white/5 border border-white/10 text-white placeholder:text-white/20" 
+                      : "bg-slate-100 border border-slate-200 text-[#001829] placeholder:text-slate-400"}`}
+                />
+                <button className="bg-[#00aeef] hover:bg-[#009bd5] text-white px-8 py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-[#00aeef]/20 transition-all active:scale-95 flex items-center justify-center gap-2 group">
+                  {lang === 'mn' ? "Бүртгүүлэх" : "Subscribe"}
+                  <Send size={16} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                </button>
+              </form>
+              <p className={`text-[10px] font-medium mt-4 text-center lg:text-left opacity-40 uppercase tracking-widest ${isDark ? "text-white" : "text-slate-900"}`}>
+                {lang === 'mn' ? "Бид таны мэдээллийг хэзээ ч бусдад хуваалцахгүй" : "Your privacy is our priority. No spam, ever."}
+              </p>
+            </div>
+          </div>
+        </motion.div>
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-6">
+      {/* 2. MAIN FOOTER CONTENT */}
+      <div className={`relative pt-40 pb-12 px-6 border-t transition-colors duration-700
+        ${isDark ? "bg-[#001829] border-white/5" : "bg-white border-slate-100"}`}>
         
-        {/* 2. TOP SECTION: CTA & BRAND */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 mb-20 items-center">
-           
-           {/* Left: Brand Identity */}
-           <div className="space-y-6">
+        {/* Background Ambience */}
+        <div className="absolute inset-0 pointer-events-none opacity-50">
+          <div className={`absolute bottom-0 right-0 w-[500px] h-[500px] rounded-full blur-[150px]
+            ${isDark ? "bg-[#00aeef]/10" : "bg-sky-100"}`} />
+          <div className="absolute inset-0 opacity-[0.03] bg-[url('/noise.png')] mix-blend-overlay" />
+        </div>
+
+        <div className="relative z-10 max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-20">
+            
+            {/* Column 1: Brand */}
+            <div className="space-y-8">
               <Link href="/" className="flex items-center gap-4 group">
-                 <div className="relative w-16 h-16 rounded-full bg-white flex items-center justify-center shadow-[0_0_30px_rgba(0,174,239,0.3)]">
-                    <Image src="/logo.jpg" alt="Logo" width={64} height={64} className="rounded-full object-cover p-0.5" />
-                 </div>
-                 <div>
-                    <h2 className="text-3xl font-black tracking-tight leading-none">UNICEF CLUB</h2>
-                    <p className="text-[#00aeef] font-bold tracking-[0.4em] text-sm mt-1">MONGOLIA</p>
-                 </div>
+                <div className={`relative w-14 h-14 rounded-full flex items-center justify-center p-0.5 border-2 transition-transform duration-500 group-hover:rotate-12
+                  ${isDark ? "bg-white border-[#00aeef]" : "bg-white border-sky-100 shadow-sm"}`}>
+                   <Image src="/logo.jpg" alt="Logo" width={50} height={50} className="rounded-full object-cover" />
+                </div>
+                <div>
+                  <h2 className={`text-xl font-black tracking-tight leading-none ${isDark ? "text-white" : "text-[#001829]"}`}>UNICEF CLUB</h2>
+                  <p className="text-[#00aeef] font-bold tracking-[0.3em] text-[10px] mt-1">MONGOLIA</p>
+                </div>
               </Link>
-              <p className="text-white/60 max-w-md leading-relaxed">
-                 {lang === 'mn' 
-                   ? "Хүүхэд бүрийн төлөө гэрэлт ирээдүйг хамтдаа бүтээцгээе."
-                   : "Building a brighter future for every child, together. Join the movement for change."}
+              <p className={`text-sm leading-relaxed font-medium opacity-60 ${isDark ? "text-white" : "text-slate-600"}`}>
+                {lang === 'mn' 
+                  ? "MNUMS Student UNICEF Club нь хүүхэд бүрийн эрхийг хамгаалах, тэднийг дэмжих зорилготой залуучуудын нэгдэл юм."
+                  : "Empowering students at MNUMS to advocate for children's rights and create lasting impact across Mongolia."}
               </p>
-           </div>
-
-           {/* Right: Newsletter Glass Box */}
-           <motion.div 
-             initial={{ opacity: 0, y: 20 }}
-             whileInView={{ opacity: 1, y: 0 }}
-             viewport={{ once: true }}
-             className="relative p-1 rounded-3xl bg-gradient-to-br from-white/10 to-white/5 border border-white/10 backdrop-blur-xl"
-           >
-              <div className="bg-[#001d30]/80 rounded-[20px] p-8">
-                 <h3 className="text-xl font-bold mb-2">
-                    {lang === 'mn' ? "Мэдээлэл авах" : "Stay Updated"}
-                 </h3>
-                 <p className="text-sm text-white/50 mb-6">
-                    {lang === 'mn' ? "Манай үйл ажиллагааны талаарх мэдээллийг цаг алдалгүй аваарай." : "Get the latest updates on our campaigns and events."}
-                 </p>
-                 
-                 <form className="flex gap-2">
-                    <input 
-                      type="email" 
-                      placeholder="Enter your email" 
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-[#00aeef] transition-colors"
-                    />
-                    <button type="button" className="bg-[#00aeef] hover:bg-[#009bd5] text-white p-3 rounded-xl transition-colors shadow-lg shadow-blue-500/20">
-                       <Send size={20} />
-                    </button>
-                 </form>
+              <div className="flex gap-4">
+                {SOCIALS.map((soc, i) => (
+                  <a key={i} href={soc.href} className={`w-10 h-10 rounded-full flex items-center justify-center border transition-all hover:scale-110
+                    ${isDark ? "bg-white/5 border-white/10 text-white/60 hover:text-[#00aeef] hover:border-[#00aeef]" : "bg-slate-50 border-slate-200 text-slate-400 hover:text-[#00aeef] hover:border-[#00aeef]"}`}>
+                    <soc.icon size={18} />
+                  </a>
+                ))}
               </div>
-           </motion.div>
-        </div>
+            </div>
 
-        {/* 3. LINKS GRID */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 lg:gap-12 border-t border-white/10 pt-16 mb-16">
-           
-           {/* Column 1 */}
-           <div>
-              <h4 className="font-bold text-[#00aeef] uppercase tracking-widest text-xs mb-6">About Us</h4>
-              <ul className="space-y-4">
-                 {LINKS.about.map((link) => (
-                    <li key={link.href}>
-                       <Link href={link.href} className="text-white/60 hover:text-white transition-colors flex items-center gap-2 group">
-                          <span className="w-1 h-1 rounded-full bg-[#00aeef] opacity-0 group-hover:opacity-100 transition-opacity" />
-                          <span className="group-hover:translate-x-1 transition-transform">{link.label[lang]}</span>
-                       </Link>
+            {/* Column 2 & 3: Links */}
+            {[
+              { title: { en: "Organization", mn: "Байгууллага" }, items: LINKS.about },
+              { title: { en: "Ways to Help", mn: "Туслах замууд" }, items: LINKS.action }
+            ].map((col, i) => (
+              <div key={i}>
+                <h4 className={`text-xs font-black uppercase tracking-[0.2em] mb-8 ${isDark ? "text-[#00aeef]" : "text-sky-600"}`}>
+                  {col.title[lang]}
+                </h4>
+                <ul className="space-y-4">
+                  {col.items.map((link, j) => (
+                    <li key={j}>
+                      <Link href={link.href} className={`text-sm font-bold flex items-center gap-2 group transition-colors
+                        ${isDark ? "text-white/40 hover:text-white" : "text-slate-400 hover:text-[#001829]"}`}>
+                        <ChevronRight size={14} className="opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all text-[#00aeef]" />
+                        {link.label[lang]}
+                      </Link>
                     </li>
-                 ))}
-              </ul>
-           </div>
-
-           {/* Column 2 */}
-           <div>
-              <h4 className="font-bold text-[#00aeef] uppercase tracking-widest text-xs mb-6">Get Involved</h4>
-              <ul className="space-y-4">
-                 {LINKS.action.map((link) => (
-                    <li key={link.href}>
-                       <Link href={link.href} className="text-white/60 hover:text-white transition-colors flex items-center gap-2 group">
-                           <span className="w-1 h-1 rounded-full bg-[#00aeef] opacity-0 group-hover:opacity-100 transition-opacity" />
-                           <span className="group-hover:translate-x-1 transition-transform">{link.label[lang]}</span>
-                       </Link>
-                    </li>
-                 ))}
-              </ul>
-           </div>
-
-           {/* Column 3: Contact */}
-           <div>
-              <h4 className="font-bold text-[#00aeef] uppercase tracking-widest text-xs mb-6">Contact</h4>
-              <ul className="space-y-6">
-                 <li className="flex gap-3 text-sm text-white/70">
-                    <div className="p-2 bg-white/5 rounded-lg h-fit border border-white/10">
-                       <MapPin size={16} className="text-[#00aeef]" />
-                    </div>
-                    <span>
-                       MNUMS Campus B,<br/>
-                       Sukhbaatar District,<br/>
-                       Ulaanbaatar, Mongolia
-                    </span>
-                 </li>
-                 <li className="flex gap-3 text-sm text-white/70 items-center">
-                    <div className="p-2 bg-white/5 rounded-lg border border-white/10">
-                       <Mail size={16} className="text-[#00aeef]" />
-                    </div>
-                    <a href="mailto:club@mnums.edu.mn" className="hover:text-white">club@mnums.edu.mn</a>
-                 </li>
-              </ul>
-           </div>
-
-           {/* Column 4: Socials */}
-           <div>
-               <h4 className="font-bold text-[#00aeef] uppercase tracking-widest text-xs mb-6">Follow Us</h4>
-               <div className="flex gap-3">
-                  {SOCIALS.map((social, i) => (
-                     <a 
-                       key={i} 
-                       href={social.href}
-                       className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/70 hover:text-white hover:border-white/30 hover:bg-white/10 transition-all hover:-translate-y-1"
-                     >
-                        <social.icon size={18} />
-                     </a>
                   ))}
-               </div>
-           </div>
-
-        </div>
-
-        {/* 4. MASSIVE WATERMARK */}
-        <div className="absolute bottom-0 left-0 w-full overflow-hidden pointer-events-none select-none z-0">
-           <motion.h1 
-             style={{ y: yText }}
-             className="text-[12rem] md:text-[20rem] font-black text-white/[0.02] text-center leading-[0.7] tracking-tighter whitespace-nowrap"
-           >
-              UNICEF CLUB
-           </motion.h1>
-        </div>
-
-        {/* 5. COPYRIGHT & UTILS */}
-        <div className="relative z-10 flex flex-col md:flex-row justify-between items-center py-8 border-t border-white/5 gap-4">
-           <div className="text-xs text-white/40 font-medium">
-              © 2025 MNUMS Student UNICEF Club. 
-              <span className="hidden md:inline"> All rights reserved.</span>
-           </div>
-           
-           <div className="flex items-center gap-6">
-              <div className="flex items-center gap-1 text-xs text-white/40">
-                 Made with <Heart size={12} className="text-red-500 animate-pulse fill-red-500" /> in Ulaanbaatar
+                </ul>
               </div>
-              <button 
-                onClick={scrollToTop}
-                className="group flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-[#00aeef] rounded-full border border-white/10 hover:border-[#00aeef] transition-all text-xs font-bold uppercase tracking-wider"
-              >
-                 Top <ArrowUp size={14} className="group-hover:-translate-y-0.5 transition-transform" />
-              </button>
-           </div>
-        </div>
+            ))}
 
+            {/* Column 4: Contact */}
+            <div>
+              <h4 className={`text-xs font-black uppercase tracking-[0.2em] mb-8 ${isDark ? "text-[#00aeef]" : "text-sky-600"}`}>
+                {lang === 'mn' ? "Холбоо барих" : "Get in Touch"}
+              </h4>
+              <ul className="space-y-6">
+                <li className="flex gap-4">
+                  <div className={`p-3 rounded-2xl h-fit border ${isDark ? "bg-white/5 border-white/10" : "bg-sky-50 border-sky-100"}`}>
+                    <MapPin size={18} className="text-[#00aeef]" />
+                  </div>
+                  <span className={`text-sm font-bold leading-tight ${isDark ? "text-white/60" : "text-slate-600"}`}>
+                    MNUMS Campus B,<br/> Sukhbaatar District,<br/> Ulaanbaatar, MN
+                  </span>
+                </li>
+                <li className="flex gap-4 items-center">
+                  <div className={`p-3 rounded-2xl border ${isDark ? "bg-white/5 border-white/10" : "bg-sky-50 border-sky-100"}`}>
+                    <Mail size={18} className="text-[#00aeef]" />
+                  </div>
+                  <a href="mailto:club@mnums.edu.mn" className={`text-sm font-bold hover:text-[#00aeef] transition-colors ${isDark ? "text-white/60" : "text-slate-600"}`}>
+                    club@mnums.edu.mn
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          {/* 3. GIANT WATERMARK */}
+          <div className="absolute bottom-0 left-0 w-full overflow-hidden pointer-events-none select-none z-0">
+             <motion.h1 
+               style={{ y: yText }}
+               className={`text-[12rem] md:text-[22rem] font-black text-center leading-[0.7] tracking-tighter whitespace-nowrap opacity-[0.03] transition-colors
+                 ${isDark ? "text-white" : "text-slate-900"}`}
+             >
+                UNICEF CLUB
+             </motion.h1>
+          </div>
+
+          {/* 4. FOOTER BOTTOM */}
+          <div className={`relative z-10 pt-8 border-t flex flex-col md:flex-row justify-between items-center gap-6
+            ${isDark ? "border-white/5" : "border-slate-100"}`}>
+            
+            <p className={`text-[10px] font-bold uppercase tracking-widest ${isDark ? "text-white/20" : "text-slate-400"}`}>
+              © 2025 MNUMS Student UNICEF Club. 
+              <span className="ml-2 inline-flex items-center gap-1">
+                Made with <Heart size={10} className="text-rose-500 fill-rose-500 animate-pulse" /> for every child.
+              </span>
+            </p>
+
+            <div className="flex items-center gap-8">
+               <Link href="/privacy" className={`text-[10px] font-black uppercase tracking-widest hover:text-[#00aeef] transition-colors ${isDark ? "text-white/20" : "text-slate-400"}`}>
+                 {lang === 'mn' ? "Нууцлал" : "Privacy"}
+               </Link>
+               <button 
+                onClick={scrollToTop}
+                className={`group flex items-center gap-2 px-6 py-2 rounded-full border transition-all text-[10px] font-black uppercase tracking-widest
+                  ${isDark 
+                    ? "bg-white/5 border-white/10 text-white/40 hover:bg-[#00aeef] hover:text-white" 
+                    : "bg-slate-50 border-slate-200 text-slate-400 hover:bg-[#00aeef] hover:text-white"}`}
+              >
+                 Top <ArrowUp size={12} className="group-hover:-translate-y-1 transition-transform" />
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </footer>
   );

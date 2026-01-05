@@ -1,12 +1,29 @@
-import { clerkMiddleware } from '@clerk/nextjs/server';
+import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
 
-export default clerkMiddleware();
+// 1. Define the protected route
+const isAdminRoute = createRouteMatcher(['/admin(.*)']);
+
+// 2. Make the callback ASYNC
+export default clerkMiddleware(async (auth, req) => {
+  
+  if (isAdminRoute(req)) {
+    // 3. AWAIT the auth() call to resolve the Promise
+    const { sessionClaims } = await auth();
+    
+    // Debug Log (Check your server terminal)
+    console.log("Middleware checking role:", sessionClaims?.metadata);
+
+    // 4. Safely check the role
+    const metadata = sessionClaims?.metadata as { role?: string } | undefined;
+
+    if (metadata?.role !== 'admin') {
+      // Redirect to home if failed
+      return NextResponse.redirect(new URL('/', req.url));
+    }
+  }
+});
 
 export const config = {
-  matcher: [
-    // Skip Next.js internals and all static files, unless found in search params
-    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
-    // Always run for API routes
-    '/(api|trpc)(.*)',
-  ],
+  matcher: ['/((?!.*\\..*|_next).*)', '/', '/(api|trpc)(.*)'],
 };

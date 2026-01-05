@@ -12,6 +12,7 @@
   "dependencies": {
     "@clerk/nextjs": "^6.36.5",
     "clerk": "^0.8.3",
+    "cloudinary": "^2.8.0",
     "clsx": "^2.1.1",
     "framer-motion": "^12.23.26",
     "lucide-react": "^0.562.0",

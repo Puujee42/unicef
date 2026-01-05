@@ -1,116 +1,68 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { 
   ArrowUpRight, 
   Clock, 
   MapPin, 
-  Calendar as CalendarIcon, 
-  Search, 
-  Filter, 
-  ChevronDown,
-  Sparkles,
-  Zap
+  Droplets, 
+  Search,
+  Zap,
+  History,
+  Loader2,
+  Filter,
+  CalendarDays
 } from "lucide-react";
 import { 
   motion, 
   useMotionValue, 
   useSpring, 
   useTransform, 
-  AnimatePresence, 
-  useScroll 
+  AnimatePresence 
 } from "framer-motion";
+import { useTheme } from "next-themes";
 import { useLanguage } from "../context/LanguageContext";
 
-// --- BRAND PALETTE ---
+// --- CONFIG ---
+const CATEGORIES = [
+  { id: 'all', en: 'All Events', mn: 'Бүгд' },
+  { id: 'campaign', en: 'Campaigns', mn: 'Аяны Ажил' },
+  { id: 'workshop', en: 'Workshops', mn: 'Сургалт' },
+  { id: 'fundraiser', en: 'Fundraisers', mn: 'Хандив' },
+];
+
 const BRAND = {
   sky: "#00aeef",
   ocean: "#005691",
   deep: "#001829",
-  white: "#ffffff",
-  gold: "#fbbf24",
 };
 
-// --- CONTENT ---
-const CATEGORIES = [
-  { id: 'all', en: 'All Events', mn: 'Бүгд' },
-  { id: 'campaign', en: 'Campaigns', mn: 'Аяны Ажил' },
-  { id: 'workshop', en: 'Education', mn: 'Сургалт' },
-  { id: 'fundraiser', en: 'Charity', mn: 'Хандив' },
-];
+// Helper to map category to color
+const getCategoryColor = (category: string) => {
+    switch (category) {
+        case 'campaign': return BRAND.sky;
+        case 'fundraiser': return "#fbbf24"; // Gold
+        case 'workshop': return BRAND.ocean;
+        default: return BRAND.sky;
+    }
+};
 
-const EVENTS = [
-  {
-    id: 1,
-    category: 'campaign',
-    featured: true, 
-    status: 'upcoming',
-    image: "https://images.unsplash.com/photo-1544027993-37dbfe43562a?q=80&w=2070&auto=format&fit=crop",
-    date: { d: "24", m: { en: "OCT", mn: "10 САР" } },
-    title: { en: "Youth Leadership Summit 2025", mn: "Залуучуудын Манлайллын Чуулган" },
-    location: { en: "Shangri-La, Ulaanbaatar", mn: "Шангри-Ла, Улаанбаатар" },
-    time: "09:00 - 18:00",
-    color: BRAND.sky 
-  },
-  {
-    id: 2,
-    category: 'fundraiser',
-    featured: false,
-    status: 'upcoming',
-    image: "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?q=80&w=2070&auto=format&fit=crop",
-    date: { d: "05", m: { en: "NOV", mn: "11 САР" } },
-    title: { en: "Book Donation Drive", mn: "Номын Хандивын Аян" },
-    location: { en: "MNUMS Campus", mn: "АШУҮИС Кампус" },
-    time: "All Day",
-    color: BRAND.gold 
-  },
-  {
-    id: 3,
-    category: 'workshop',
-    featured: false,
-    status: 'upcoming',
-    image: "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?q=80&w=2070&auto=format&fit=crop",
-    date: { d: "12", m: { en: "NOV", mn: "11 САР" } },
-    title: { en: "Mental Health Workshop", mn: "Сэтгэл Зүйн Эрүүл Мэнд" },
-    location: { en: "Library Hall 404", mn: "Номын Сан 404" },
-    time: "14:00 - 16:00",
-    color: BRAND.ocean 
-  },
-  {
-    id: 4,
-    category: 'campaign',
-    featured: true, 
-    status: 'upcoming',
-    image: "https://images.unsplash.com/photo-1461301214746-1e790926d323?q=80&w=2070&auto=format&fit=crop",
-    date: { d: "01", m: { en: "DEC", mn: "12 САР" } },
-    title: { en: "Clean Air For Kids", mn: "Цэвэр Агаар - Хүүхдэд" },
-    location: { en: "Sukhbaatar District", mn: "Сүхбаатар Дүүрэг" },
-    time: "10:00 - 13:00",
-    color: BRAND.sky 
-  },
-  // Past Events for filtering logic
-  {
-    id: 5,
-    category: 'workshop',
-    featured: false, 
-    status: 'past',
-    image: "https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=2070&auto=format&fit=crop",
-    date: { d: "10", m: { en: "SEP", mn: "9 САР" } },
-    title: { en: "Student Orientation", mn: "Оюутны Танилцуулга" },
-    location: { en: "Main Hall", mn: "Төв Танхим" },
-    time: "10:00",
-    color: BRAND.ocean 
-  }
-];
+const formatDateObject = (dateString: string, lang: 'en' | 'mn') => {
+    const d = new Date(dateString);
+    const day = d.getDate().toString();
+    const month = d.toLocaleDateString(lang === 'mn' ? 'mn-MN' : 'en-US', { month: 'short' }).toUpperCase();
+    return { d: day, m: month };
+};
 
-// --- 3D TILT CARD COMPONENT ---
-const EventCard = ({ event, lang }: any) => {
+// --- 3D CARD COMPONENT ---
+const EventCard = ({ event, lang, isDark }: any) => {
   const x = useMotionValue(0);
   const y = useMotionValue(0);
-  const mouseXSpring = useSpring(x);
-  const mouseYSpring = useSpring(y);
+  const mouseXSpring = useSpring(x, { stiffness: 150, damping: 15 });
+  const mouseYSpring = useSpring(y, { stiffness: 150, damping: 15 });
+
   const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["5deg", "-5deg"]);
   const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-5deg", "5deg"]);
 
@@ -122,85 +74,97 @@ const EventCard = ({ event, lang }: any) => {
 
   const handleMouseLeave = () => { x.set(0); y.set(0); };
 
+  const color = getCategoryColor(event.category);
+  const dateObj = formatDateObject(event.date, lang);
+  const isPast = event.status === 'past';
+
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, scale: 0.95 }}
+      initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.95 }}
-      transition={{ duration: 0.4 }}
+      exit={{ opacity: 0, scale: 0.9 }}
       style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       className={`
-        relative group rounded-[2rem] overflow-hidden cursor-pointer 
-        border border-white/10 shadow-2xl bg-[#001d30]
-        ${event.featured ? "md:col-span-2 aspect-[16/9]" : "md:col-span-1 aspect-[4/5] md:aspect-auto h-full min-h-[420px]"}
+        relative group rounded-[2.5rem] overflow-hidden cursor-pointer border transition-all duration-500
+        ${event.featured ? "md:col-span-2 aspect-[16/9]" : "md:col-span-1 aspect-[4/5] md:aspect-auto h-full min-h-[450px]"}
+        ${isDark 
+            ? "bg-[#001d30] border-white/10 shadow-2xl" 
+            : "bg-white border-slate-200 shadow-xl shadow-slate-200/50 hover:shadow-sky-100"
+        }
       `}
     >
       {/* Background Image */}
-      <div className="absolute inset-0">
+      <div className="absolute inset-0 z-0">
         <Image 
-          src={event.image} 
-          alt={event.title[lang]} 
+          src={event.image || "/logo.jpg"} 
+          alt={event.title[lang] || event.title.en} 
           fill 
-          className={`object-cover transition-transform duration-700 group-hover:scale-105 ${event.status === 'past' ? 'grayscale opacity-50' : ''}`}
+          className={`object-cover transition-transform duration-1000 group-hover:scale-110 
+            ${isPast ? 'grayscale opacity-40' : 'opacity-90'}`}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#001829] via-[#001829]/60 to-transparent opacity-90 group-hover:opacity-95 transition-opacity duration-300" />
-        <div 
-          className="absolute inset-0 opacity-0 group-hover:opacity-40 transition-opacity duration-500 mix-blend-color-dodge" 
-          style={{ backgroundColor: event.color }} 
+        {/* Overlay Gradients */}
+        <div className={`absolute inset-0 bg-gradient-to-t via-transparent transition-opacity duration-300
+           ${isDark 
+              ? "from-[#001829] via-[#001829]/40 opacity-90 group-hover:opacity-95" 
+              : "from-white via-white/20 opacity-80 group-hover:opacity-90"}`} 
+        />
+        <div className="absolute inset-0 opacity-0 group-hover:opacity-30 transition-opacity duration-700 mix-blend-soft-light" 
+             style={{ backgroundColor: color }} 
         />
       </div>
 
       {/* Date Stub */}
-      <div className="absolute top-6 left-6 z-20 flex flex-col items-center justify-center bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl w-16 h-20 shadow-[0_8px_32px_0_rgba(31,38,135,0.37)] overflow-hidden group-hover:-translate-y-2 transition-transform duration-300">
-        <div className="w-full h-1" style={{ backgroundColor: event.color }} />
-        <span className="text-2xl font-black text-white mt-1 drop-shadow-md">{event.date.d}</span>
-        <span className="text-[8px] font-bold text-white/80 uppercase tracking-widest mb-2">{event.date.m[lang]}</span>
+      <div className={`absolute top-6 left-6 z-20 flex flex-col items-center justify-center backdrop-blur-md border rounded-2xl w-16 h-20 shadow-xl transition-transform duration-500 group-hover:-translate-y-2
+        ${isDark ? "bg-white/10 border-white/20" : "bg-white/90 border-slate-200 shadow-sm"}`}>
+        <div className="w-full h-1 rounded-t-2xl" style={{ backgroundColor: isPast ? '#94a3b8' : color }} />
+        <span className={`text-2xl font-black mt-1 ${isDark ? "text-white" : "text-slate-900"}`}>{dateObj.d}</span>
+        <span className={`text-[9px] font-bold uppercase tracking-widest mb-2 ${isDark ? "text-white/60" : "text-slate-500"}`}>{dateObj.m}</span>
       </div>
 
-      {/* Status Badge */}
-      {event.status === 'past' && (
-         <div className="absolute top-6 right-6 z-20 px-3 py-1 bg-black/50 backdrop-blur-md rounded-full border border-white/10 text-white/60 text-xs font-bold uppercase tracking-widest">
-            {lang === 'mn' ? 'Өнгөрсөн' : 'Past Event'}
-         </div>
-      )}
+      {/* Location */}
+      <div className={`absolute top-6 right-6 z-20 px-3 py-1.5 rounded-full backdrop-blur-md border flex items-center gap-1.5 shadow-lg
+        ${isDark ? "bg-[#002b49]/40 border-white/10" : "bg-white/80 border-slate-200"}`}>
+         <MapPin size={12} style={{ color: color }} />
+         <span className={`text-[10px] font-bold uppercase tracking-wider ${isDark ? "text-white/90" : "text-slate-700"}`}>
+            {event.location[lang] || event.location.en}
+         </span>
+      </div>
 
-      {/* Content Area */}
+      {/* Content */}
       <div className="absolute bottom-0 left-0 w-full p-8 z-20 transform translate-z-10">
-        <div className="transform transition-transform duration-500 group-hover:-translate-y-2">
-           <div className="flex items-center gap-2 mb-3">
-              <span 
-                className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest text-white/90 border border-white/20 shadow-lg backdrop-blur-sm"
-                style={{ backgroundColor: `${event.color}40` }}
+        <div className="transform transition-transform duration-500 group-hover:-translate-y-4">
+           <div className="flex items-center gap-3 mb-4">
+              <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border backdrop-blur-sm
+                ${isDark ? "text-white/90 border-white/20" : "text-slate-700 border-slate-200"}`}
+                style={{ backgroundColor: isPast ? 'transparent' : `${color}30` }}
               >
                 {event.category}
               </span>
-              <span className="flex items-center gap-1 text-[10px] font-bold text-white/70 uppercase tracking-wider">
-                <Clock size={12} className="text-sky-400" /> {event.time}
+              <span className={`flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider ${isDark ? "text-white/70" : "text-slate-500"}`}>
+                <Clock size={12} className="text-[#00aeef]" /> {event.timeString}
               </span>
            </div>
 
-           <h3 className="text-2xl md:text-3xl lg:text-4xl font-black text-white leading-[0.9] mb-2 drop-shadow-xl tracking-tight">
-             {event.title[lang]}
+           <h3 className={`text-3xl lg:text-4xl font-black leading-[0.95] mb-3 tracking-tight transition-colors
+             ${isDark ? "text-white" : "text-slate-900 group-hover:text-[#00aeef]"}`}>
+             {event.title[lang] || event.title.en}
            </h3>
-           
-           <div className="flex items-center gap-2 text-white/60 text-xs font-bold uppercase tracking-wider mt-2">
-              <MapPin size={12} /> {event.location[lang]}
-           </div>
         </div>
 
-        {/* Reveal Button */}
-        {event.status !== 'past' && (
+        {!isPast && (
             <div className="h-0 overflow-hidden group-hover:h-auto transition-all duration-500 opacity-0 group-hover:opacity-100">
-            <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-white/30 to-transparent my-4" />
-            <Link href={`/events/${event.id}`} className="flex items-center gap-2 font-bold uppercase tracking-widest text-xs text-white group/btn">
-                {lang === 'mn' ? 'Бүртгүүлэх' : 'Register Now'} 
-                <span className="p-1 rounded-full bg-white/20 group-hover/btn:bg-[#00aeef] transition-colors">
-                    <ArrowUpRight size={14} />
-                </span>
-            </Link>
+               <div className={`w-full h-px my-6 ${isDark ? "bg-white/10" : "bg-slate-200"}`} />
+               <Link href={`/events/${event._id}`} className="inline-flex items-center gap-3 group/btn">
+                    <div className="w-10 h-10 rounded-full bg-[#00aeef] text-white flex items-center justify-center group-hover/btn:scale-110 transition-transform shadow-lg">
+                        <ArrowUpRight size={18} />
+                    </div>
+                    <span className={`font-bold uppercase tracking-widest text-xs ${isDark ? "text-white" : "text-slate-900"}`}>
+                        {lang === 'mn' ? 'Бүртгүүлэх' : 'Register Now'}
+                    </span>
+               </Link>
             </div>
         )}
       </div>
@@ -208,170 +172,178 @@ const EventCard = ({ event, lang }: any) => {
   );
 };
 
-// --- MAIN PAGE ---
-export default function EventsPage() {
+// --- MAIN COMPONENT ---
+export default function EventsSection() {
   const { language: lang } = useLanguage();
+  const { theme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  
   const [filter, setFilter] = useState("all");
   const [showPast, setShowPast] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [events, setEvents] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Filtering Logic
-  const filteredEvents = EVENTS.filter(ev => {
-    const matchesCategory = filter === 'all' || ev.category === filter;
-    const matchesStatus = showPast ? true : ev.status === 'upcoming';
-    const matchesSearch = ev.title[lang].toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesStatus && matchesSearch;
+  useEffect(() => setMounted(true), []);
+  const isDark = mounted && (theme === 'dark' || !theme);
+
+  useEffect(() => {
+    async function fetchData() {
+        try {
+            const res = await fetch('/api/admin/events'); 
+            if (res.ok) {
+                const data = await res.json();
+                setEvents(data);
+            }
+        } catch (error) { console.error(error); } 
+        finally { setLoading(false); }
+    }
+    if (mounted) fetchData();
+  }, [mounted]);
+
+  const filteredEvents = events.filter(ev => {
+      const matchesCategory = filter === 'all' || ev.category === filter;
+      const title = (ev.title[lang] || ev.title.en).toLowerCase();
+      const matchesSearch = title.includes(searchQuery.toLowerCase());
+      const isPast = new Date(ev.date) < new Date();
+      return matchesCategory && matchesSearch && (showPast ? isPast : !isPast);
   });
 
-  const upcomingCount = EVENTS.filter(e => e.status === 'upcoming').length;
+  if (!mounted) return null;
 
   return (
-    <main className="relative min-h-screen bg-[#001829] text-white pt-24 overflow-hidden">
+    <section className={`relative py-24 px-4 overflow-hidden transition-colors duration-700 
+      ${isDark ? "bg-[#00101a]" : "bg-slate-50"}`}>
       
-      {/* 1. ATMOSPHERIC BACKGROUND */}
-      <div className="absolute inset-0 pointer-events-none fixed">
-         <div className="absolute -top-40 -left-40 w-[900px] h-[900px] bg-[#00aeef] rounded-full blur-[250px] opacity-[0.08]" />
-         <div className="absolute top-1/2 right-0 w-[600px] h-[600px] bg-[#005691] rounded-full blur-[200px] opacity-[0.1]" />
-         <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.03] mix-blend-overlay" />
-         <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:6rem_6rem]" />
+      {/* Background Ambience */}
+      <div className="absolute inset-0 pointer-events-none z-0">
+         <div className={`absolute top-0 left-0 w-full h-full transition-opacity duration-700
+            ${isDark ? "opacity-100" : "opacity-30"}`}>
+             <div className="absolute top-0 left-0 w-[600px] h-[600px] bg-[#00aeef] rounded-full blur-[150px] opacity-[0.1]" />
+             <div className="absolute bottom-0 right-0 w-[800px] h-[800px] bg-[#005691] rounded-full blur-[180px] opacity-[0.1]" />
+         </div>
+         <div className="absolute inset-0 opacity-[0.03] bg-[url('/noise.png')] mix-blend-overlay" />
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-6">
+      <div className="relative z-10 max-w-7xl mx-auto">
         
-        {/* 2. HERO HEADER */}
-        <section className="py-12 mb-8 relative">
-           <motion.div 
-             initial={{ opacity: 0, y: 20 }}
-             animate={{ opacity: 1, y: 0 }}
-             transition={{ duration: 0.6 }}
-             className="text-center max-w-3xl mx-auto"
-           >
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 mb-6 backdrop-blur-md">
-                 <div className="w-2 h-2 rounded-full bg-[#00aeef] animate-pulse" />
-                 <span className="text-[#00aeef] text-xs font-black uppercase tracking-[0.2em]">
-                    {upcomingCount} {lang === 'mn' ? 'Удахгүй болох арга хэмжээ' : 'Upcoming Events'}
-                 </span>
-              </div>
-              <h1 className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white to-white/50 mb-6 drop-shadow-sm">
-                 {lang === 'mn' ? 'АРГА ХЭМЖЭЭ' : 'IMPACT EVENTS'}
-              </h1>
-              <p className="text-white/60 text-lg font-medium max-w-2xl mx-auto">
-                 {lang === 'mn' 
-                   ? 'Манай клубын зохион байгуулж буй кампанит ажил, сургалт, хандивын аянуудад нэгдээрэй.' 
-                   : 'Join our campaigns, workshops, and fundraisers. Be part of the movement making big differences.'}
-              </p>
-           </motion.div>
-        </section>
-
-        {/* 3. CONTROL BAR (Filter & Search) */}
-        <section className="sticky top-24 z-30 mb-16">
-           <motion.div 
-             layout
-             className="bg-[#002b49]/60 backdrop-blur-xl border border-white/10 p-2 rounded-2xl flex flex-col md:flex-row items-center gap-4 shadow-2xl"
-           >
-              {/* Category Tabs */}
-              <div className="flex p-1 bg-black/20 rounded-xl overflow-x-auto w-full md:w-auto no-scrollbar">
-                 {CATEGORIES.map((cat) => (
-                    <button
-                      key={cat.id}
-                      onClick={() => setFilter(cat.id)}
-                      className="relative px-6 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap"
-                    >
-                      {filter === cat.id && (
-                        <motion.div
-                          layoutId="filterPill"
-                          className="absolute inset-0 bg-[#00aeef] rounded-lg shadow-lg shadow-[#00aeef]/30"
-                          transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                        />
-                      )}
-                      <span className={`relative z-10 ${filter === cat.id ? "text-white" : "text-white/60 hover:text-white"}`}>
-                        {cat[lang]}
-                      </span>
-                    </button>
-                 ))}
-              </div>
-
-              {/* Search Bar */}
-              <div className="relative flex-1 w-full group">
-                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30 group-focus-within:text-[#00aeef] transition-colors" size={18} />
-                 <input 
-                    type="text" 
-                    placeholder={lang === 'mn' ? "Хайх..." : "Search events..."}
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full bg-black/20 border border-white/5 rounded-xl py-3 pl-12 pr-4 text-white text-sm focus:outline-none focus:bg-black/40 focus:border-[#00aeef]/50 transition-all placeholder:text-white/20"
-                 />
-              </div>
-
-              {/* Past Events Toggle */}
-              <button 
-                 onClick={() => setShowPast(!showPast)}
-                 className={`px-4 py-3 rounded-xl border flex items-center gap-2 text-xs font-bold uppercase tracking-wide transition-all w-full md:w-auto justify-center
-                    ${showPast 
-                       ? "bg-white/10 border-white/30 text-white" 
-                       : "bg-transparent border-white/5 text-white/40 hover:text-white hover:bg-white/5"}`
-                 }
-              >
-                 <Clock size={16} />
-                 <span>{lang === 'mn' ? 'Түүх' : 'Archive'}</span>
-              </button>
-           </motion.div>
-        </section>
-
-        {/* 4. EVENTS GRID */}
-        <section className="min-h-[50vh]">
-           <motion.div 
-             layout
-             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 auto-rows-fr"
-           >
-             <AnimatePresence mode="popLayout">
-               {filteredEvents.length > 0 ? (
-                 filteredEvents.map((event) => (
-                   <EventCard key={event.id} event={event} lang={lang} />
-                 ))
-               ) : (
-                 <motion.div 
-                   initial={{ opacity: 0 }} 
-                   animate={{ opacity: 1 }} 
-                   className="col-span-full flex flex-col items-center justify-center py-20 text-center"
-                 >
-                    <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mb-4">
-                        <Filter size={32} className="text-white/20" />
-                    </div>
-                    <h3 className="text-2xl font-bold text-white mb-2">No events found</h3>
-                    <p className="text-white/50">Try adjusting your filters or search query.</p>
-                 </motion.div>
-               )}
-             </AnimatePresence>
-           </motion.div>
-        </section>
-
-        {/* 5. NEWSLETTER / HOST EVENT CTA */}
-        <section className="py-32">
-           <div className="relative rounded-[3rem] bg-gradient-to-r from-[#001d30] to-[#00101a] border border-white/10 p-12 lg:p-24 text-center overflow-hidden">
-              {/* Bg Effects */}
-              <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#00aeef] rounded-full blur-[200px] opacity-[0.1]" />
-              <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.05]" />
-
-              <div className="relative z-10 max-w-3xl mx-auto space-y-8">
-                 <div className="w-16 h-16 bg-[#00aeef] rounded-2xl mx-auto flex items-center justify-center shadow-lg shadow-[#00aeef]/40 rotate-12 mb-8">
-                    <Zap size={32} className="text-white fill-white" />
+        {/* HEADER */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16">
+           <div>
+              <motion.div initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} className="flex items-center gap-3 mb-4">
+                 <div className={`p-2 rounded-full border shadow-sm ${isDark ? "bg-white/5 border-white/10" : "bg-white border-slate-200"}`}>
+                    <CalendarDays size={16} className="text-[#00aeef]" />
                  </div>
-                 
-                 <h2 className="text-4xl md:text-6xl font-black text-white tracking-tight leading-[0.95]">
-                    {lang === 'mn' ? 'Таны Санаачилга Хэрэгтэй' : 'Have an Idea? Host an Event.'}
-                 </h2>
-                 <p className="text-white/60 text-xl">
-                    {lang === 'mn' 
-                      ? 'Бид гишүүдийнхээ шинэ санаа, санаачилгыг үргэлж дэмждэг. Төслөө танилцуулаарай.'
-                      : 'We support member-led initiatives. Pitch your campaign or workshop idea to the board.'}
-                 </p>
-                 <div className="flex flex-wrap justify-center gap-4">
-                    <button className="px-8 py-4 bg-white text-[#001829] font-black uppercase tracking-widest text-xs rounded-full hover:bg-[#00aeef] hover:text-white transition-colors shadow-xl">
+                 <span className={`font-black uppercase tracking-[0.2em] text-xs ${isDark ? "text-white/60" : "text-slate-500"}`}>
+                    {lang === 'mn' ? 'Хөтөлбөр' : 'Schedule'}
+                 </span>
+              </motion.div>
+              
+              <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className={`text-5xl md:text-7xl font-black tracking-tighter transition-colors ${isDark ? "text-white" : "text-[#001829]"}`}>
+                 {lang === 'mn' ? 'Арга Хэмжээ' : 'Upcoming Events'}
+              </motion.h2>
+           </div>
+
+           {/* Filter Tabs */}
+           <div className={`flex flex-wrap gap-1 p-1.5 rounded-full border backdrop-blur-xl shadow-lg
+             ${isDark ? "bg-[#001829]/50 border-white/10" : "bg-white border-slate-200"}`}>
+              {CATEGORIES.map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() => setFilter(cat.id)}
+                  className={`relative px-5 py-2.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all z-10
+                    ${filter === cat.id ? "text-white" : (isDark ? "text-white/40 hover:text-white" : "text-slate-400 hover:text-slate-900")}`}
+                >
+                  {filter === cat.id && (
+                    <motion.div layoutId="activeF" className="absolute inset-0 bg-[#00aeef] rounded-full -z-10 shadow-md" transition={{ type: "spring", bounce: 0.2, duration: 0.6 }} />
+                  )}
+                  {cat[lang]}
+                </button>
+              ))}
+           </div>
+        </div>
+
+        {/* CONTROL BAR */}
+        <div className={`sticky top-24 z-30 mb-16 p-2 rounded-3xl border backdrop-blur-2xl flex flex-col md:flex-row items-center gap-4 transition-all duration-500
+          ${isDark ? "bg-[#002b49]/60 border-white/10 shadow-2xl" : "bg-white/80 border-slate-200 shadow-xl shadow-slate-200/40"}`}>
+           <div className="relative flex-1 w-full group">
+              <Search className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors ${isDark ? "text-white/20" : "text-slate-400"}`} size={18} />
+              <input 
+                 type="text" 
+                 placeholder={lang === 'mn' ? "Хайх..." : "Search events..."}
+                 value={searchQuery}
+                 onChange={(e) => setSearchQuery(e.target.value)}
+                 className={`w-full rounded-2xl py-3.5 pl-12 pr-4 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-[#00aeef]/50 transition-all
+                   ${isDark ? "bg-black/20 text-white placeholder:text-white/20" : "bg-slate-50 text-slate-900 placeholder:text-slate-400"}`}
+              />
+           </div>
+
+           <button 
+              onClick={() => setShowPast(!showPast)}
+              className={`px-6 py-3.5 rounded-2xl border flex items-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all w-full md:w-auto justify-center
+                 ${showPast 
+                    ? "bg-[#00aeef] border-[#00aeef] text-white shadow-lg" 
+                    : (isDark ? "bg-white/5 border-white/10 text-white/40 hover:text-white" : "bg-slate-50 border-slate-200 text-slate-400 hover:text-slate-900")}`
+              }
+           >
+              <History size={16} />
+              <span>{lang === 'mn' ? 'Түүх' : 'Archive'}</span>
+           </button>
+        </div>
+
+        {/* GRID */}
+        {loading ? (
+             <div className="flex flex-col items-center justify-center py-40 gap-4">
+                 <Loader2 className="animate-spin w-12 h-12 text-[#00aeef]" />
+                 <p className={`text-[10px] font-black uppercase tracking-widest ${isDark ? "text-white/40" : "text-slate-400"}`}>Syncing Events...</p>
+             </div>
+        ) : (
+            <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 auto-rows-fr">
+            <AnimatePresence mode="popLayout">
+                {filteredEvents.length > 0 ? (
+                    filteredEvents.map((event) => (
+                        <EventCard key={event._id} event={{...event, status: showPast ? 'past' : 'upcoming'}} lang={lang} isDark={isDark} />
+                    ))
+                ) : (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className={`col-span-full py-40 text-center rounded-[3rem] border border-dashed flex flex-col items-center justify-center ${isDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-slate-50"}`}>
+                        <div className="w-20 h-20 rounded-full bg-[#00aeef]/10 flex items-center justify-center mb-6">
+                            <Filter size={32} className="text-[#00aeef]" />
+                        </div>
+                        <h3 className={`text-xl font-black mb-2 ${isDark ? "text-white" : "text-slate-900"}`}>No events found</h3>
+                        <p className={`text-sm font-medium ${isDark ? "text-white/40" : "text-slate-500"}`}>Try adjusting your filters or search terms.</p>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+            </motion.div>
+        )}
+
+        {/* PROPOSAL CTA */}
+        <section className="mt-40">
+           <div className={`relative rounded-[4rem] p-12 lg:p-24 overflow-hidden group shadow-2xl transition-colors duration-700
+              ${isDark ? "bg-[#00aeef]" : "bg-[#001829]"}`}>
+              <div className="absolute -top-24 -right-24 w-96 h-96 bg-white/10 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-1000" />
+              
+              <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-12">
+                 <div className="max-w-2xl text-center lg:text-left">
+                    <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-md px-4 py-2 rounded-full text-white text-[10px] font-black uppercase tracking-widest mb-8 border border-white/20">
+                       <Zap size={14} className="fill-current" />
+                       {lang === 'mn' ? 'Гишүүдийн Санаачилга' : 'Member Initiative'}
+                    </div>
+                    <h2 className="text-4xl md:text-6xl font-black text-white tracking-tighter leading-[0.95] mb-8">
+                       {lang === 'mn' ? 'Таны Санаачилга, Бидний Дэмжлэг' : 'Have an Idea? Host an Event.'}
+                    </h2>
+                    <p className="text-white/80 text-lg font-medium">
+                       We support member-led initiatives. Pitch your campaign or workshop idea to the board and let's make it happen together.
+                    </p>
+                 </div>
+
+                 <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
+                    <button className={`h-16 px-10 rounded-full font-black uppercase tracking-widest text-xs transition-all active:scale-95
+                       ${isDark ? "bg-white text-[#001829] hover:shadow-xl" : "bg-[#00aeef] text-white hover:bg-sky-400"}`}>
                        {lang === 'mn' ? 'Санал Илгээх' : 'Submit Proposal'}
                     </button>
-                    <button className="px-8 py-4 border border-white/20 text-white font-black uppercase tracking-widest text-xs rounded-full hover:bg-white/10 transition-colors">
-                       {lang === 'mn' ? 'Холбоо Барих' : 'Contact Us'}
+                    <button className="h-16 px-10 bg-white/10 text-white border border-white/20 rounded-full font-black uppercase tracking-widest text-xs hover:bg-white/20 transition-all">
+                       {lang === 'mn' ? 'Холбоо Барих' : 'Contact Board'}
                     </button>
                  </div>
               </div>
@@ -379,6 +351,6 @@ export default function EventsPage() {
         </section>
 
       </div>
-    </main>
+    </section>
   );
 }

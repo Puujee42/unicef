@@ -1,13 +1,15 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { 
   ArrowUpRight, 
-  Clock,
+  Clock, 
   MapPin, 
-  Droplets,
+  CalendarDays, 
+  Loader2,
+  ChevronRight,
   Filter
 } from "lucide-react";
 import { 
@@ -17,17 +19,10 @@ import {
   useTransform, 
   AnimatePresence 
 } from "framer-motion";
+import { useTheme } from "next-themes";
 import { useLanguage } from "../context/LanguageContext";
 
-// --- OCEAN & SKY PALETTE ---
-const BRAND = {
-  sky: "#00aeef",       // Bright Cyan (Sky)
-  ocean: "#005691",     // Rich Medium Blue (Ocean)
-  deep: "#001829",      // Darkest Navy (Deep Sea)
-  foam: "#e0f2fe",      // Very Pale Blue (Sea Foam)
-  white: "#ffffff",     // Pure White
-};
-
+// --- CONFIG ---
 const CATEGORIES = [
   { id: 'all', en: 'All Events', mn: 'Бүгд' },
   { id: 'campaign', en: 'Campaigns', mn: 'Аяны Ажил' },
@@ -35,60 +30,22 @@ const CATEGORIES = [
   { id: 'fundraiser', en: 'Fundraisers', mn: 'Хандив' },
 ];
 
-const EVENTS = [
-  {
-    id: 1,
-    category: 'campaign',
-    featured: true, 
-    image: "https://images.unsplash.com/photo-1544027993-37dbfe43562a?q=80&w=2070&auto=format&fit=crop",
-    date: { d: "24", m: { en: "OCT", mn: "10 САР" } },
-    title: { en: "Youth Leadership Summit 2025", mn: "Залуучуудын Манлайллын Чуулган" },
-    location: { en: "Shangri-La, Ulaanbaatar", mn: "Шангри-Ла, Улаанбаатар" },
-    time: "09:00 - 18:00",
-    color: BRAND.sky // Sky Blue for Leadership
-  },
-  {
-    id: 2,
-    category: 'fundraiser',
-    featured: false,
-    image: "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?q=80&w=2070&auto=format&fit=crop",
-    date: { d: "05", m: { en: "NOV", mn: "11 САР" } },
-    title: { en: "Book Donation Drive", mn: "Номын Хандивын Аян" },
-    location: { en: "MNUMS Campus", mn: "АШУҮИС Кампус" },
-    time: "All Day",
-    color: BRAND.white // White/Clean for Charity
-  },
-  {
-    id: 3,
-    category: 'workshop',
-    featured: false,
-    image: "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?q=80&w=2070&auto=format&fit=crop",
-    date: { d: "12", m: { en: "NOV", mn: "11 САР" } },
-    title: { en: "Mental Health Workshop", mn: "Сэтгэл Зүйн Эрүүл Мэнд" },
-    location: { en: "Library Hall 404", mn: "Номын Сан 404" },
-    time: "14:00 - 16:00",
-    color: BRAND.ocean // Ocean Blue for Education
-  },
-  {
-    id: 4,
-    category: 'campaign',
-    featured: true, 
-    image: "https://images.unsplash.com/photo-1461301214746-1e790926d323?q=80&w=2070&auto=format&fit=crop",
-    date: { d: "01", m: { en: "DEC", mn: "12 САР" } },
-    title: { en: "Clean Air For Kids", mn: "Цэвэр Агаар - Хүүхдэд" },
-    location: { en: "Sukhbaatar District", mn: "Сүхбаатар Дүүрэг" },
-    time: "10:00 - 13:00",
-    color: BRAND.sky // Sky Blue
-  }
-];
+// --- HELPER: DATE FORMATTER ---
+const formatDate = (dateString: string, lang: 'en' | 'mn') => {
+  if (!dateString) return { day: "00", month: "DEC" };
+  const d = new Date(dateString);
+  const day = d.getDate();
+  const month = d.toLocaleDateString(lang === 'mn' ? 'mn-MN' : 'en-US', { month: 'short' }).toUpperCase();
+  return { day, month };
+};
 
-// --- 3D CARD COMPONENT ---
-const EventCard = ({ event, lang }: any) => {
+// --- SUB-COMPONENT: 3D CARD ---
+const EventCard = ({ event, lang, isDark }: any) => {
   const x = useMotionValue(0);
   const y = useMotionValue(0);
 
-  const mouseXSpring = useSpring(x);
-  const mouseYSpring = useSpring(y);
+  const mouseXSpring = useSpring(x, { stiffness: 150, damping: 15 });
+  const mouseYSpring = useSpring(y, { stiffness: 150, damping: 15 });
 
   const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["7deg", "-7deg"]);
   const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-7deg", "7deg"]);
@@ -99,10 +56,9 @@ const EventCard = ({ event, lang }: any) => {
     y.set((e.clientY - rect.top) / rect.height - 0.5);
   };
 
-  const handleMouseLeave = () => {
-    x.set(0);
-    y.set(0);
-  };
+  const handleMouseLeave = () => { x.set(0); y.set(0); };
+
+  const { day, month } = formatDate(event.date, lang);
 
   return (
     <motion.div
@@ -110,117 +66,158 @@ const EventCard = ({ event, lang }: any) => {
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.95 }}
-      transition={{ duration: 0.5, ease: [0.25, 1, 0.5, 1] }}
       style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       className={`
-        relative group rounded-[2rem] overflow-hidden cursor-pointer 
-        border border-white/10 shadow-2xl
-        ${event.featured ? "md:col-span-2 aspect-[16/9]" : "md:col-span-1 aspect-[4/5] md:aspect-auto h-full min-h-[400px]"}
+        relative group rounded-[2.5rem] overflow-hidden cursor-pointer h-full min-h-[420px] border transition-all duration-500
+        ${isDark 
+          ? "bg-[#001829] border-[#00aeef]/20 shadow-[0_0_30px_-10px_rgba(0,0,0,0.8)]" 
+          : "bg-white border-slate-200 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.1)] hover:shadow-[0_20px_50px_-10px_rgba(0,174,239,0.15)]"
+        }
       `}
     >
-      {/* Background Image */}
-      <div className="absolute inset-0 bg-[#001829]">
-        <Image 
-          src={event.image} 
-          alt={event.title[lang]} 
-          fill 
-          className="object-cover transition-transform duration-700 group-hover:scale-105"
-        />
-        {/* Ocean Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#001829] via-[#002b49]/50 to-transparent opacity-80 group-hover:opacity-95 transition-opacity duration-300" />
+      {/* IMAGE SECTION */}
+      <div className="absolute inset-0 h-full w-full">
+        {/* Placeholder Gradient */}
+        <div className={`absolute inset-0 bg-gradient-to-b ${isDark ? "from-[#002b49] to-[#00101a]" : "from-slate-100 to-slate-200"}`} />
         
-        {/* Color Tint - Liquid Effect */}
-        <div 
-          className="absolute inset-0 opacity-0 group-hover:opacity-60 transition-opacity duration-700 mix-blend-soft-light bg-gradient-to-tr from-transparent via-transparent" 
-          style={{ backgroundColor: event.color }} 
+        {/* Actual Image */}
+        <Image 
+          src={event.image || "/logo.jpg"} 
+          alt={event.title[lang] || "Event"} 
+          fill 
+          className="object-cover transition-transform duration-700 group-hover:scale-110 opacity-90"
         />
+
+        {/* Overlay Gradients */}
+        <div className={`absolute inset-0 bg-gradient-to-t via-transparent to-transparent opacity-90 transition-opacity duration-300
+           ${isDark ? "from-[#00101a] via-[#001829]/60" : "from-white via-white/40"}`} 
+        />
+        
+        {/* Hover Color Tint */}
+        <div className={`absolute inset-0 opacity-0 group-hover:opacity-40 transition-opacity duration-500 mix-blend-overlay bg-[#00aeef]`} />
       </div>
 
-      {/* "Ice Cube" Date Stub */}
-      <div className="absolute top-6 left-6 z-20 flex flex-col items-center justify-center bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl w-16 h-20 shadow-[0_8px_32px_0_rgba(31,38,135,0.37)] overflow-hidden group-hover:-translate-y-2 transition-transform duration-300">
-        <div className="w-full h-1" style={{ backgroundColor: event.color === BRAND.white ? BRAND.sky : event.color }} />
-        <span className="text-2xl font-black text-white mt-1 drop-shadow-md">{event.date.d}</span>
-        <span className="text-[8px] font-bold text-white/80 uppercase tracking-widest mb-2">{event.date.m[lang]}</span>
+      {/* FLOATING DATE BADGE */}
+      <div className={`
+         absolute top-6 left-6 z-20 flex flex-col items-center justify-center rounded-2xl w-14 h-16 border backdrop-blur-md shadow-lg transition-transform duration-300 group-hover:-translate-y-1
+         ${isDark 
+            ? "bg-white/10 border-white/20 text-white" 
+            : "bg-white/90 border-slate-200 text-[#001829]"}
+      `}>
+        <span className="text-xl font-black leading-none">{day}</span>
+        <span className="text-[9px] font-bold uppercase tracking-widest opacity-80">{month}</span>
       </div>
 
-      {/* Location Badge */}
-      <div className="absolute top-6 right-6 z-20 px-3 py-1.5 rounded-full bg-[#002b49]/40 backdrop-blur-md border border-white/10 flex items-center gap-1.5 shadow-lg">
-         <MapPin size={12} style={{ color: event.color === BRAND.white ? BRAND.sky : event.color }} />
-         <span className="text-[10px] font-bold text-white/90 uppercase tracking-wider">{event.location[lang]}</span>
-      </div>
-
-      {/* Content Area */}
-      <div className="absolute bottom-0 left-0 w-full p-8 z-20 transform translate-z-10">
-        <div className="transform transition-transform duration-500 group-hover:-translate-y-2">
-           {/* Tags */}
-           <div className="flex items-center gap-2 mb-3">
-              <span 
-                className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest text-white/90 border border-white/20 shadow-lg backdrop-blur-sm"
-                style={{ 
-                  backgroundColor: event.color === BRAND.white ? 'rgba(255,255,255,0.2)' : `${event.color}40`,
-                }}
-              >
+      {/* CONTENT AREA */}
+      <div className="absolute bottom-0 left-0 w-full p-8 z-20 transform translate-z-10 flex flex-col justify-end h-full pointer-events-none">
+        <div className="transform transition-transform duration-500 group-hover:-translate-y-2 pointer-events-auto">
+           
+           {/* Tags & Location */}
+           <div className="flex flex-wrap items-center gap-3 mb-3">
+              <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border backdrop-blur-sm
+                 ${isDark 
+                    ? "bg-[#00aeef]/10 border-[#00aeef]/30 text-[#00aeef]" 
+                    : "bg-[#00aeef] border-[#00aeef] text-white shadow-md"}
+              `}>
                 {event.category}
               </span>
-              <span className="flex items-center gap-1 text-[10px] font-bold text-white/70 uppercase tracking-wider">
-                <Clock size={12} className="text-sky-400" /> {event.time}
+              <span className={`flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider
+                 ${isDark ? "text-white/70" : "text-slate-600"}`}>
+                <MapPin size={12} className="text-[#00aeef]" /> 
+                {event.location[lang] || event.location.en}
               </span>
            </div>
 
            {/* Title */}
-           <h3 className="text-2xl md:text-3xl lg:text-4xl font-black text-white leading-[0.9] mb-2 drop-shadow-xl tracking-tight">
-             {event.title[lang]}
+           <h3 className={`text-2xl lg:text-3xl font-black leading-[0.95] tracking-tight mb-2 line-clamp-2 transition-colors
+              ${isDark ? "text-white" : "text-[#001829] group-hover:text-[#00aeef]"}`}>
+             {event.title[lang] || event.title.en}
            </h3>
+           
+           <div className={`text-xs font-bold flex items-center gap-2 mb-4
+              ${isDark ? "text-white/50" : "text-slate-500"}`}>
+              <Clock size={12} className="text-[#00aeef]" /> {event.timeString}
+           </div>
         </div>
 
-        {/* Reveal Interaction */}
-        <div className="h-0 overflow-hidden group-hover:h-auto transition-all duration-500 opacity-0 group-hover:opacity-100">
-           <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-white/30 to-transparent my-3" />
-           <div className="flex items-center gap-2 font-bold uppercase tracking-widest text-xs text-white">
-              {lang === 'mn' ? 'Бүртгүүлэх' : 'Register Now'} 
-              <span className="p-1 rounded-full bg-white/20">
-                <ArrowUpRight size={14} />
+        {/* Hover Reveal Button */}
+        <div className="h-0 overflow-hidden group-hover:h-auto transition-all duration-500 opacity-0 group-hover:opacity-100 pointer-events-auto">
+           <div className={`w-full h-[1px] mb-4 ${isDark ? "bg-white/20" : "bg-slate-200"}`} />
+           <Link href={`/events/${event._id}`} className={`flex items-center gap-2 font-black uppercase tracking-widest text-[10px] transition-all hover:gap-4
+               ${isDark ? "text-white" : "text-[#001829]"}`}>
+              {lang === 'mn' ? 'Дэлгэрэнгүй' : 'View Details'} 
+              <span className={`p-1 rounded-full ${isDark ? "bg-[#00aeef] text-white" : "bg-[#00aeef] text-white"}`}>
+                <ArrowUpRight size={12} />
               </span>
-           </div>
+           </Link>
         </div>
       </div>
     </motion.div>
   );
 };
 
-// --- MAIN COMPONENT ---
+// --- MAIN SECTION COMPONENT ---
 export default function EventsSection() {
   const { language: lang } = useLanguage();
+  const { theme } = useTheme();
+  const [mounted, setMounted] = useState(false);
   const [filter, setFilter] = useState("all");
+  const [events, setEvents] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  
+  // Hydration fix & Theme detection
+  useEffect(() => setMounted(true), []);
+  const isDark = mounted && (theme === 'dark' || !theme);
 
-  const filteredEvents = EVENTS.filter(ev => filter === 'all' || ev.category === filter);
+  // --- API FETCH ---
+  useEffect(() => {
+    async function fetchData() {
+        try {
+            const res = await fetch('/api/admin/events'); 
+            if (res.ok) {
+                const data = await res.json();
+                // Filter for upcoming events only
+                const upcoming = data.filter((e: any) => e.status === 'upcoming');
+                setEvents(upcoming);
+            }
+        } catch (error) {
+            console.error("Failed to fetch events", error);
+        } finally {
+            setLoading(false);
+        }
+    }
+    fetchData();
+  }, []);
+
+  // Filter Logic
+  const filteredEvents = events.filter(ev => filter === 'all' || ev.category === filter);
+
+  if (!mounted) return null;
 
   return (
-    // Deep Ocean Background
-    <section className="relative py-24 px-4 bg-[#001829] overflow-hidden">
+    <section className={`relative py-24 px-4 overflow-hidden transition-colors duration-700 
+      ${isDark ? "bg-[#00101a]" : "bg-[#f8fafc]"}`
+    }>
       
-      {/* Background Ambience (The "Sea" and "Sky") */}
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-         {/* Deep Ocean Gradient Base */}
-         <div className="absolute inset-0 bg-gradient-to-b from-[#002B49] to-[#00101a]" />
+      {/* --- BACKGROUND AMBIENCE --- */}
+      <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none">
+         {/* Noise Texture */}
+         <div className="absolute inset-0 opacity-[0.03] bg-[url('/noise.png')] mix-blend-overlay z-10" />
          
-         {/* Sky Blue Glow (Top Left - "Surface") */}
-         <div className="absolute -top-20 -left-20 w-[600px] h-[600px] bg-[#00aeef] rounded-full blur-[150px] opacity-[0.15]" />
-         
-         {/* Ocean Blue Glow (Bottom Right - "Depth") */}
-         <div className="absolute bottom-0 right-0 w-[800px] h-[800px] bg-[#005691] rounded-full blur-[180px] opacity-[0.1]" />
-         
-         {/* Water Surface Pattern */}
-         <div className="absolute inset-0 opacity-[0.05]" 
-              style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='1' fill-rule='evenodd'%3E%3Ccircle cx='3' cy='3' r='1'/%3E%3C/g%3E%3C/svg%3E")` }} 
+         {/* Blobs */}
+         <div className={`absolute -top-20 -right-20 w-[600px] h-[600px] rounded-full blur-[150px] opacity-[0.1] transition-colors duration-700
+            ${isDark ? "bg-[#00aeef]" : "bg-sky-300"}`} 
+         />
+         <div className={`absolute bottom-0 left-0 w-[500px] h-[500px] rounded-full blur-[150px] opacity-[0.1] transition-colors duration-700
+            ${isDark ? "bg-[#005691]" : "bg-blue-300"}`} 
          />
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto">
         
-        {/* HEADER SECTION */}
+        {/* --- HEADER --- */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16">
            <div>
               <motion.div 
@@ -229,11 +226,11 @@ export default function EventsSection() {
                  viewport={{ once: true }}
                  className="flex items-center gap-3 mb-4"
               >
-                 <div className="p-1.5 rounded-full bg-white/10 backdrop-blur-md">
-                    <Droplets size={14} className="text-[#00aeef]" />
+                 <div className={`p-2 rounded-full border shadow-sm ${isDark ? "bg-white/5 border-white/10" : "bg-white border-slate-200"}`}>
+                    <CalendarDays size={16} className="text-[#00aeef]" />
                  </div>
-                 <span className="text-white/80 font-black uppercase tracking-[0.25em] text-xs">
-                    {lang === 'mn' ? 'Хөтөлбөр' : 'Events Schedule'}
+                 <span className={`font-black uppercase tracking-[0.25em] text-xs ${isDark ? "text-white/60" : "text-slate-500"}`}>
+                    {lang === 'mn' ? 'Хөтөлбөр' : 'Schedule'}
                  </span>
               </motion.div>
               
@@ -241,71 +238,99 @@ export default function EventsSection() {
                  initial={{ opacity: 0, y: 20 }}
                  whileInView={{ opacity: 1, y: 0 }}
                  viewport={{ once: true }}
-                 transition={{ delay: 0.1 }}
-                 className="text-5xl md:text-7xl font-black text-white tracking-tighter drop-shadow-2xl"
+                 className={`text-4xl md:text-6xl lg:text-7xl font-black tracking-tighter leading-[0.9]
+                    ${isDark ? "text-white" : "text-[#001829]"}`}
               >
                  {lang === 'mn' ? 'Арга Хэмжээ' : 'Upcoming Events'}
+                 <span className="text-[#00aeef]">.</span>
               </motion.h2>
            </div>
 
-           {/* Ocean Glass Filter Tabs */}
+           {/* --- FILTER TABS --- */}
            <motion.div 
               initial={{ opacity: 0, x: 20 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              className="flex flex-wrap gap-2 p-1 bg-white/5 border border-white/10 rounded-full backdrop-blur-xl shadow-2xl"
+              className={`flex flex-wrap gap-1 p-1.5 rounded-full border backdrop-blur-xl shadow-lg
+                ${isDark ? "bg-[#001829]/50 border-white/10" : "bg-white border-slate-200"}`}
            >
-              {CATEGORIES.map((cat) => (
-                <button
-                  key={cat.id}
-                  onClick={() => setFilter(cat.id)}
-                  className="relative px-6 py-3 rounded-full text-xs font-bold uppercase tracking-wider transition-colors z-10"
-                >
-                  {filter === cat.id && (
-                    <motion.div
-                      layoutId="activeFilter"
-                      className="absolute inset-0 bg-[#00aeef] rounded-full -z-10 shadow-[0_0_20px_rgba(0,174,239,0.4)]"
-                      transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                    />
-                  )}
-                  <span className={filter === cat.id ? "text-white" : "text-white/60 hover:text-white"}>
+              {CATEGORIES.map((cat) => {
+                const isActive = filter === cat.id;
+                return (
+                  <button
+                    key={cat.id}
+                    onClick={() => setFilter(cat.id)}
+                    className={`relative px-6 py-2.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all z-10
+                       ${isActive 
+                         ? (isDark ? "text-white" : "text-white") 
+                         : (isDark ? "text-white/40 hover:text-white" : "text-slate-400 hover:text-slate-900")}
+                    `}
+                  >
+                    {isActive && (
+                      <motion.div
+                        layoutId="activeEventFilter"
+                        className="absolute inset-0 bg-[#00aeef] rounded-full -z-10 shadow-md"
+                        transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                      />
+                    )}
                     {cat[lang]}
-                  </span>
-                </button>
-              ))}
+                  </button>
+                )
+              })}
            </motion.div>
         </div>
 
-        {/* BENTO GRID */}
-        <motion.div 
-          layout
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-fr"
-        >
-          <AnimatePresence mode="popLayout">
-            {filteredEvents.map((event) => (
-              <EventCard key={event.id} event={event} lang={lang} />
-            ))}
-          </AnimatePresence>
-        </motion.div>
+        {/* --- CONTENT GRID --- */}
+        {loading ? (
+            <div className="flex flex-col items-center justify-center py-40 gap-4">
+                <Loader2 className="animate-spin w-12 h-12 text-[#00aeef]" />
+                <p className={`text-xs font-bold uppercase tracking-widest ${isDark ? "text-white/40" : "text-slate-400"}`}>
+                   {lang === 'mn' ? 'Уншиж байна...' : 'Loading events...'}
+                </p>
+            </div>
+        ) : filteredEvents.length > 0 ? (
+            <motion.div 
+              layout
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 auto-rows-fr"
+            >
+            <AnimatePresence mode="popLayout">
+                {filteredEvents.map((event) => (
+                    <EventCard key={event._id} event={event} lang={lang} isDark={isDark} />
+                ))}
+            </AnimatePresence>
+            </motion.div>
+        ) : (
+            <div className={`flex flex-col items-center justify-center py-40 border-2 border-dashed rounded-[3rem]
+               ${isDark ? "border-white/5 bg-white/5" : "border-slate-200 bg-slate-50"}`}>
+                <div className="p-4 rounded-full bg-[#00aeef]/10 mb-4">
+                    <Filter className="text-[#00aeef] w-8 h-8" />
+                </div>
+                <h3 className={`text-lg font-bold ${isDark ? "text-white" : "text-[#001829]"}`}>
+                    {lang === 'mn' ? 'Одоогоор арга хэмжээ байхгүй байна.' : 'No upcoming events found.'}
+                </h3>
+                <p className={`text-sm mt-1 ${isDark ? "text-white/40" : "text-slate-400"}`}>
+                    {lang === 'mn' ? 'Та дараа дахин шалгана уу.' : 'Please check back later.'}
+                </p>
+            </div>
+        )}
 
-        {/* VIEW ALL LINK */}
+        {/* --- VIEW ALL BUTTON --- */}
         <motion.div 
            initial={{ opacity: 0 }}
            whileInView={{ opacity: 1 }}
-           className="mt-20 flex justify-center"
+           className="mt-24 flex justify-center"
         >
-           <Link href="/events" className="group flex items-center gap-4 text-white/70 hover:text-white transition-colors">
-              <div className="relative">
-                 {/* Ripple Button */}
-                 <div className="w-16 h-16 rounded-full border border-white/20 flex items-center justify-center bg-white/5 group-hover:bg-[#00aeef] group-hover:border-[#00aeef] transition-all duration-300 z-10 relative backdrop-blur-sm">
-                    <ArrowUpRight className="group-hover:rotate-45 transition-transform duration-300" />
-                 </div>
-                 {/* White Ring Animation */}
-                 <div className="absolute inset-0 border border-white/30 rounded-full scale-100 group-hover:scale-125 opacity-100 group-hover:opacity-0 transition-all duration-500" />
-              </div>
-              <span className="text-sm font-bold uppercase tracking-[0.2em] shadow-black drop-shadow-lg">
+           <Link href="/events" className="group relative inline-flex items-center gap-4">
+              <span className={`text-xs font-black uppercase tracking-[0.25em] transition-colors
+                 ${isDark ? "text-white/60 group-hover:text-white" : "text-slate-500 group-hover:text-[#001829]"}`}>
                   {lang === 'mn' ? 'Бүх арга хэмжээг харах' : 'View All Events'}
               </span>
+              <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:rotate-[-45deg]
+                 ${isDark 
+                    ? "bg-[#00aeef] text-white shadow-[0_0_25px_rgba(0,174,239,0.4)]" 
+                    : "bg-[#001829] text-white shadow-xl hover:shadow-2xl"}`}>
+                 <ChevronRight size={18} />
+              </div>
            </Link>
         </motion.div>
 

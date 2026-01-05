@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { 
@@ -11,6 +11,7 @@ import {
   Sparkles 
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTheme } from "next-themes";
 import { useLanguage } from "../context/LanguageContext";
 
 // --- CONTENT ---
@@ -46,8 +47,17 @@ const CONTENT = {
 
 export default function JoinPage() {
   const { language: lang } = useLanguage();
+  const { theme } = useTheme();
   const router = useRouter();
+  
   const [selected, setSelected] = useState<'signup' | 'signin'>('signup');
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => setMounted(true), []);
+
+  if (!mounted) return null;
+
+  const isDark = theme === "dark" || !theme;
 
   const handleContinue = () => {
     if (selected === 'signup') {
@@ -58,13 +68,16 @@ export default function JoinPage() {
   };
 
   return (
-    <div className="min-h-screen w-full flex bg-[#001829] text-white overflow-hidden font-sans">
+    <div className={`min-h-screen w-full flex overflow-hidden font-sans transition-colors duration-700
+      ${isDark ? "bg-[#001829] text-white" : "bg-slate-50 text-slate-900"}`}>
       
       {/* --- LEFT COLUMN: INTERACTION --- */}
       <div className="w-full lg:w-[55%] xl:w-[50%] relative flex flex-col justify-center px-8 md:px-16 lg:px-24 z-10">
         
-        {/* Background Noise for Texture */}
+        {/* Background Noise & Grid */}
         <div className="absolute inset-0 opacity-[0.03] bg-[url('/noise.png')] mix-blend-overlay pointer-events-none" />
+        <div className={`absolute inset-0 opacity-[0.02] pointer-events-none ${isDark ? "invert-0" : "invert"}`}
+             style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40' fill='%2300aeef' fill-opacity='1'/%3E%3C/svg%3E")` }} />
 
         {/* Logo/Home Link */}
         <motion.div 
@@ -73,23 +86,27 @@ export default function JoinPage() {
           className="absolute top-10 left-8 md:left-16 lg:left-24"
         >
           <Link href="/" className="flex items-center gap-3 group">
-             <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#00aeef] to-[#005691] flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                <span className="font-black text-white text-xs">UC</span>
+             <div className="relative">
+                <div className="absolute -inset-1 rounded-full bg-[#00aeef] blur-md opacity-20 group-hover:opacity-40 transition-opacity" />
+                <div className="relative w-10 h-10 rounded-full bg-gradient-to-tr from-[#00aeef] to-[#005691] flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                   <span className="font-black text-white text-xs">UC</span>
+                </div>
              </div>
              <div className="flex flex-col">
-                <span className="font-bold text-white leading-none">UNICEF CLUB</span>
-                <span className="text-[#00aeef] text-[10px] font-bold tracking-widest uppercase">Mongolia</span>
+                <span className={`font-black leading-none tracking-tight ${isDark ? "text-white" : "text-[#001829]"}`}>UNICEF CLUB</span>
+                <span className="text-[#00aeef] text-[10px] font-bold tracking-[0.2em] uppercase">Mongolia</span>
              </div>
           </Link>
         </motion.div>
 
         {/* Main Content Form */}
-        <div className="max-w-lg w-full py-20">
+        <div className="max-w-lg w-full py-20 relative z-10">
            <motion.h1 
              initial={{ opacity: 0, y: 20 }}
              animate={{ opacity: 1, y: 0 }}
              transition={{ delay: 0.1 }}
-             className="text-4xl md:text-5xl font-black tracking-tight mb-4 text-white"
+             className={`text-4xl md:text-6xl font-black tracking-tighter mb-6 transition-colors duration-500
+                ${isDark ? "text-white" : "text-[#001829]"}`}
            >
              {CONTENT.header[lang]}
            </motion.h1>
@@ -97,7 +114,8 @@ export default function JoinPage() {
              initial={{ opacity: 0, y: 20 }}
              animate={{ opacity: 1, y: 0 }}
              transition={{ delay: 0.2 }}
-             className="text-white/60 text-lg mb-12"
+             className={`text-lg mb-12 font-medium opacity-60 transition-colors duration-500
+                ${isDark ? "text-white" : "text-slate-600"}`}
            >
              {CONTENT.sub[lang]}
            </motion.p>
@@ -111,28 +129,38 @@ export default function JoinPage() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.3 }}
                 onClick={() => setSelected('signup')}
-                className={`relative group p-6 rounded-3xl border-2 cursor-pointer transition-all duration-300 flex items-start gap-6
+                className={`relative group p-8 rounded-[2rem] border-2 cursor-pointer transition-all duration-500 flex items-start gap-6
                   ${selected === 'signup' 
-                    ? "bg-[#00aeef]/10 border-[#00aeef] shadow-[0_0_30px_-5px_rgba(0,174,239,0.2)]" 
-                    : "bg-white/5 border-white/5 hover:border-white/20 hover:bg-white/10"}
+                    ? "bg-[#00aeef]/10 border-[#00aeef] shadow-2xl shadow-[#00aeef]/20" 
+                    : isDark 
+                      ? "bg-white/5 border-white/5 hover:border-white/20 hover:bg-white/10" 
+                      : "bg-white border-slate-200 hover:border-sky-200 shadow-sm"}
                 `}
               >
-                 <div className={`p-4 rounded-2xl transition-colors duration-300 ${selected === 'signup' ? "bg-[#00aeef] text-white" : "bg-white/10 text-white/50 group-hover:text-white"}`}>
-                    <UserPlus size={24} strokeWidth={2} />
+                 <div className={`p-4 rounded-2xl transition-all duration-300 shadow-lg
+                    ${selected === 'signup' 
+                      ? "bg-[#00aeef] text-white scale-110" 
+                      : isDark ? "bg-white/5 text-white/40" : "bg-slate-100 text-slate-400"}`}>
+                    <UserPlus size={24} strokeWidth={2.5} />
                  </div>
                  <div className="flex-1">
                     <div className="flex justify-between items-center mb-1">
-                       <h3 className="font-bold text-lg">{CONTENT.options.signup.title[lang]}</h3>
-                       {/* Radio Circle */}
-                       <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${selected === 'signup' ? "border-[#00aeef] bg-[#00aeef]" : "border-white/20"}`}>
+                       <h3 className={`font-black text-xl tracking-tight transition-colors
+                          ${isDark ? "text-white" : "text-[#001829]"}`}>
+                          {CONTENT.options.signup.title[lang]}
+                       </h3>
+                       <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all 
+                          ${selected === 'signup' ? "border-[#00aeef] bg-[#00aeef]" : isDark ? "border-white/20" : "border-slate-300"}`}>
                           {selected === 'signup' && <CheckCircle2 size={14} className="text-white" />}
                        </div>
                     </div>
-                    <p className="text-sm text-white/50">{CONTENT.options.signup.desc[lang]}</p>
+                    <p className={`text-sm font-medium opacity-50 ${isDark ? "text-white" : "text-slate-500"}`}>
+                       {CONTENT.options.signup.desc[lang]}
+                    </p>
                  </div>
                  
                  {/* Badge */}
-                 <div className="absolute -top-3 right-8 bg-[#00aeef] text-white text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-lg">
+                 <div className="absolute -top-3 right-8 bg-[#00aeef] text-white text-[9px] font-black uppercase tracking-[0.2em] px-4 py-1.5 rounded-full shadow-xl">
                     {CONTENT.options.signup.badge[lang]}
                  </div>
               </motion.div>
@@ -143,23 +171,34 @@ export default function JoinPage() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.4 }}
                 onClick={() => setSelected('signin')}
-                className={`relative group p-6 rounded-3xl border-2 cursor-pointer transition-all duration-300 flex items-start gap-6
+                className={`relative group p-8 rounded-[2rem] border-2 cursor-pointer transition-all duration-500 flex items-start gap-6
                   ${selected === 'signin' 
-                    ? "bg-[#00aeef]/10 border-[#00aeef] shadow-[0_0_30px_-5px_rgba(0,174,239,0.2)]" 
-                    : "bg-white/5 border-white/5 hover:border-white/20 hover:bg-white/10"}
+                    ? "bg-[#00aeef]/10 border-[#00aeef] shadow-2xl shadow-[#00aeef]/20" 
+                    : isDark 
+                      ? "bg-white/5 border-white/5 hover:border-white/20 hover:bg-white/10" 
+                      : "bg-white border-slate-200 hover:border-sky-200 shadow-sm"}
                 `}
               >
-                 <div className={`p-4 rounded-2xl transition-colors duration-300 ${selected === 'signin' ? "bg-[#00aeef] text-white" : "bg-white/10 text-white/50 group-hover:text-white"}`}>
-                    <LogIn size={24} strokeWidth={2} />
+                 <div className={`p-4 rounded-2xl transition-all duration-300 shadow-lg
+                    ${selected === 'signin' 
+                      ? "bg-[#00aeef] text-white scale-110" 
+                      : isDark ? "bg-white/5 text-white/40" : "bg-slate-100 text-slate-400"}`}>
+                    <LogIn size={24} strokeWidth={2.5} />
                  </div>
                  <div className="flex-1">
                     <div className="flex justify-between items-center mb-1">
-                       <h3 className="font-bold text-lg">{CONTENT.options.signin.title[lang]}</h3>
-                       <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${selected === 'signin' ? "border-[#00aeef] bg-[#00aeef]" : "border-white/20"}`}>
+                       <h3 className={`font-black text-xl tracking-tight transition-colors
+                          ${isDark ? "text-white" : "text-[#001829]"}`}>
+                          {CONTENT.options.signin.title[lang]}
+                       </h3>
+                       <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all 
+                          ${selected === 'signin' ? "border-[#00aeef] bg-[#00aeef]" : isDark ? "border-white/20" : "border-slate-300"}`}>
                           {selected === 'signin' && <CheckCircle2 size={14} className="text-white" />}
                        </div>
                     </div>
-                    <p className="text-sm text-white/50">{CONTENT.options.signin.desc[lang]}</p>
+                    <p className={`text-sm font-medium opacity-50 ${isDark ? "text-white" : "text-slate-500"}`}>
+                       {CONTENT.options.signin.desc[lang]}
+                    </p>
                  </div>
               </motion.div>
 
@@ -174,7 +213,7 @@ export default function JoinPage() {
            >
               <button 
                 onClick={handleContinue}
-                className="w-full bg-[#00aeef] hover:bg-[#009bd5] text-white font-black text-sm uppercase tracking-widest py-5 rounded-2xl shadow-xl shadow-[#00aeef]/20 transition-all flex items-center justify-center gap-3 group"
+                className="w-full bg-[#00aeef] hover:bg-[#009bd5] text-white font-black text-xs uppercase tracking-[0.3em] py-6 rounded-[2rem] shadow-2xl shadow-[#00aeef]/30 transition-all active:scale-[0.98] flex items-center justify-center gap-3 group"
               >
                  {CONTENT.btn[selected][lang]}
                  <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
@@ -186,9 +225,10 @@ export default function JoinPage() {
              initial={{ opacity: 0 }} 
              animate={{ opacity: 1 }} 
              transition={{ delay: 0.6 }}
-             className="mt-8 text-center"
+             className="mt-10 text-center"
            >
-              <Link href="/" className="text-white/30 text-xs font-bold uppercase tracking-widest hover:text-white transition-colors">
+              <Link href="/" className={`text-[10px] font-black uppercase tracking-[0.3em] transition-colors
+                 ${isDark ? "text-white/30 hover:text-white" : "text-slate-400 hover:text-[#001829]"}`}>
                  {CONTENT.footer[lang]}
               </Link>
            </motion.div>
@@ -197,46 +237,52 @@ export default function JoinPage() {
       </div>
 
       {/* --- RIGHT COLUMN: VISUAL ATMOSPHERE --- */}
-      <div className="hidden lg:block w-[45%] xl:w-[50%] relative overflow-hidden bg-[#00101a]">
-         {/* Animated Background Elements */}
-         <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.05] mix-blend-overlay z-10" />
+      <div className={`hidden lg:block w-[45%] xl:w-[50%] relative overflow-hidden transition-colors duration-700
+         ${isDark ? "bg-[#00101a]" : "bg-sky-50"}`}>
          
-         {/* Floating Glows */}
+         {/* Animated Glows */}
          <motion.div 
-            animate={{ scale: [1, 1.1, 1], opacity: [0.3, 0.5, 0.3] }}
+            animate={{ scale: [1, 1.1, 1], opacity: isDark ? [0.3, 0.5, 0.3] : [0.4, 0.6, 0.4] }}
             transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute -top-[20%] -right-[20%] w-[1000px] h-[1000px] bg-[#00aeef] rounded-full blur-[250px] opacity-[0.3]" 
+            className={`absolute -top-[20%] -right-[20%] w-[1000px] h-[1000px] rounded-full blur-[200px] 
+               ${isDark ? "bg-[#00aeef]" : "bg-sky-300"}`} 
          />
          <motion.div 
-            animate={{ scale: [1, 1.2, 1], opacity: [0.2, 0.4, 0.2] }}
+            animate={{ scale: [1, 1.2, 1], opacity: isDark ? [0.2, 0.4, 0.2] : [0.3, 0.5, 0.3] }}
             transition={{ duration: 15, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-            className="absolute -bottom-[20%] -left-[10%] w-[800px] h-[800px] bg-[#005691] rounded-full blur-[250px] opacity-[0.3]" 
+            className={`absolute -bottom-[20%] -left-[10%] w-[800px] h-[800px] rounded-full blur-[250px] 
+               ${isDark ? "bg-[#005691]" : "bg-blue-200"}`} 
          />
 
-         {/* Abstract Art: Glass Card in the "Ocean" */}
+         {/* Abstract Glass Card */}
          <div className="absolute inset-0 flex items-center justify-center z-20">
             <motion.div 
                initial={{ opacity: 0, scale: 0.9, rotateY: -10 }}
                animate={{ opacity: 1, scale: 1, rotateY: 0 }}
                transition={{ duration: 1.5, type: "spring" }}
-               className="relative w-[400px] h-[500px] bg-white/5 border border-white/10 rounded-[3rem] backdrop-blur-3xl shadow-2xl overflow-hidden flex flex-col items-center justify-center text-center p-12"
+               className={`relative w-[420px] h-[540px] border rounded-[3.5rem] backdrop-blur-3xl shadow-[0_40px_100px_rgba(0,0,0,0.2)] overflow-hidden flex flex-col items-center justify-center text-center p-14
+                  ${isDark ? "bg-white/5 border-white/10" : "bg-white/40 border-white/50"}`}
             >
-               <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-50" />
-               <div className="absolute -top-20 -left-20 w-40 h-40 bg-[#00aeef] rounded-full blur-2xl opacity-50" />
-               <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-[#fbbf24] rounded-full blur-3xl opacity-30" />
+               {/* Accent Blobs Inside Card */}
+               <div className="absolute -top-20 -left-20 w-48 h-48 bg-[#00aeef] rounded-full blur-3xl opacity-30" />
+               <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-[#fbbf24] rounded-full blur-3xl opacity-20" />
 
-               <div className="relative z-10 space-y-6">
-                  <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-[#00aeef] to-[#00dbde] flex items-center justify-center mx-auto shadow-lg shadow-[#00aeef]/40 animate-float-slow">
-                     <Sparkles size={32} className="text-white" />
+               <div className="relative z-10 space-y-8">
+                  <div className="w-24 h-24 rounded-3xl bg-gradient-to-tr from-[#00aeef] to-[#00dbde] flex items-center justify-center mx-auto shadow-2xl shadow-[#00aeef]/40 animate-float-slow rotate-12">
+                     <Sparkles size={40} className="text-white" />
                   </div>
-                  <h2 className="text-4xl font-black text-white leading-tight">
-                     For Every <br />
-                     <span className="text-[#00aeef]">Child</span>
-                  </h2>
-                  <p className="text-white/60 text-sm font-medium leading-relaxed">
-                     Join a global network of changemakers dedicated to building a brighter future.
-                  </p>
-                  <div className="h-1 w-20 bg-white/20 rounded-full mx-auto" />
+                  
+                  <div className="space-y-4">
+                     <h2 className={`text-5xl font-black leading-none tracking-tighter ${isDark ? "text-white" : "text-[#001829]"}`}>
+                        For Every <br />
+                        <span className="text-[#00aeef]">Child</span>
+                     </h2>
+                     <p className={`text-base font-medium leading-relaxed opacity-60 ${isDark ? "text-white" : "text-slate-600"}`}>
+                        Join a global network of changemakers dedicated to building a brighter future.
+                     </p>
+                  </div>
+
+                  <div className={`h-1 w-20 rounded-full mx-auto ${isDark ? "bg-white/20" : "bg-[#001829]/10"}`} />
                </div>
             </motion.div>
          </div>

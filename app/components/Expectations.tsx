@@ -1,6 +1,7 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { 
   Clock, 
   HeartHandshake, 
@@ -17,16 +18,10 @@ import {
   useSpring, 
   useTransform 
 } from "framer-motion";
+import { useTheme } from "next-themes";
 import { useLanguage } from "../context/LanguageContext";
 
-// --- BRAND PALETTE ---
-const BRAND = {
-  sky: "#00aeef",
-  ocean: "#005691",
-  deep: "#001829",
-  white: "#ffffff",
-};
-
+// --- CONFIG ---
 const CONTENT = {
   title: { 
     en: "Core Standards", 
@@ -70,12 +65,12 @@ const CONTENT = {
   ]
 };
 
-// --- 3D TILT GLASS CARD ---
-const ExpectationCard = ({ item, index, lang }: any) => {
+// --- 3D TILT CARD COMPONENT ---
+const ExpectationCard = ({ item, index, lang, isDark }: any) => {
   const x = useMotionValue(0);
   const y = useMotionValue(0);
-  const mouseXSpring = useSpring(x);
-  const mouseYSpring = useSpring(y);
+  const mouseXSpring = useSpring(x, { stiffness: 150, damping: 15 });
+  const mouseYSpring = useSpring(y, { stiffness: 150, damping: 15 });
   
   const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["7deg", "-7deg"]);
   const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-7deg", "7deg"]);
@@ -97,20 +92,29 @@ const ExpectationCard = ({ item, index, lang }: any) => {
       style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      className="group relative h-full min-h-[320px] p-8 rounded-[2.5rem] bg-[#002b49]/20 border border-white/5 hover:border-[#00aeef]/30 backdrop-blur-md shadow-2xl overflow-hidden transition-colors duration-500"
+      className={`
+        group relative h-full min-h-[320px] p-8 rounded-[2.5rem] overflow-hidden transition-all duration-500 border
+        ${isDark 
+          ? "bg-[#002b49]/20 border-white/5 hover:border-[#00aeef]/30 shadow-2xl" 
+          : "bg-white border-slate-200 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.05)] hover:shadow-[0_20px_40px_-10px_rgba(0,174,239,0.15)] hover:border-[#00aeef]/50"}
+      `}
     >
       {/* Background Gradient Hover */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[#00aeef]/0 via-[#00aeef]/0 to-[#00aeef]/5 group-hover:via-[#00aeef]/10 transition-all duration-700" />
+      <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-[#00aeef]/5 group-hover:via-[#00aeef]/10 transition-all duration-700" />
 
       {/* Huge Watermark Number */}
-      <span className="absolute -top-6 -right-6 text-[10rem] font-black text-white/[0.02] select-none group-hover:text-white/[0.04] transition-colors pointer-events-none leading-none">
+      <span className={`absolute -top-6 -right-6 text-[10rem] font-black select-none transition-colors pointer-events-none leading-none
+         ${isDark ? "text-white/[0.02] group-hover:text-white/[0.04]" : "text-slate-900/[0.03] group-hover:text-[#00aeef]/10"}`}>
         {item.id}
       </span>
 
       <div className="relative z-10 flex flex-col h-full transform translate-z-20">
         {/* Header */}
         <div className="flex justify-between items-start mb-6">
-           <div className="w-14 h-14 rounded-2xl bg-[#001829] border border-white/10 flex items-center justify-center group-hover:scale-110 group-hover:border-[#00aeef] transition-all duration-300 shadow-lg group-hover:shadow-[#00aeef]/20">
+           <div className={`w-14 h-14 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-all duration-300 shadow-lg
+              ${isDark 
+                ? "bg-[#001829] border border-white/10 group-hover:border-[#00aeef] group-hover:shadow-[#00aeef]/20" 
+                : "bg-slate-50 border border-slate-200 group-hover:bg-white group-hover:border-[#00aeef] group-hover:shadow-sky-100"}`}>
               <item.icon className="text-[#00aeef]" size={26} strokeWidth={1.5} />
            </div>
            {/* Pulsing Dot */}
@@ -119,18 +123,22 @@ const ExpectationCard = ({ item, index, lang }: any) => {
 
         {/* Content */}
         <div className="flex-grow">
-           <h3 className="text-2xl font-bold text-white mb-4 group-hover:text-[#00aeef] transition-colors">
+           <h3 className={`text-2xl font-bold mb-4 transition-colors
+              ${isDark ? "text-white group-hover:text-[#00aeef]" : "text-[#001829] group-hover:text-[#00aeef]"}`}>
               {item.title[lang]}
            </h3>
-           <p className="text-white/60 text-sm leading-relaxed font-medium">
+           <p className={`text-sm leading-relaxed font-medium transition-colors
+              ${isDark ? "text-white/60" : "text-slate-500"}`}>
               {item.desc[lang]}
            </p>
         </div>
 
         {/* Footer Badge */}
-        <div className="mt-8 pt-6 border-t border-white/5 flex items-center gap-2">
+        <div className={`mt-8 pt-6 border-t flex items-center gap-2
+           ${isDark ? "border-white/5" : "border-slate-100"}`}>
            <CheckCircle2 size={14} className="text-[#00aeef] opacity-50 group-hover:opacity-100 transition-opacity" />
-           <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/30 group-hover:text-white/60 transition-colors">
+           <span className={`text-[10px] font-black uppercase tracking-[0.2em] transition-colors
+              ${isDark ? "text-white/30 group-hover:text-white/60" : "text-slate-400 group-hover:text-slate-600"}`}>
               Standard
            </span>
         </div>
@@ -142,21 +150,39 @@ const ExpectationCard = ({ item, index, lang }: any) => {
 // --- MAIN COMPONENT ---
 export default function Expectations() {
   const { language: lang } = useLanguage();
+  const { theme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  // Hydration Check
+  useEffect(() => setMounted(true), []);
+  const isDark = mounted && (theme === 'dark' || !theme);
+
+  if (!mounted) return null;
 
   return (
-    <section className="relative py-32 px-4 bg-[#001829] overflow-hidden">
+    <section className={`relative py-32 px-4 overflow-hidden transition-colors duration-700
+       ${isDark ? "bg-[#001829]" : "bg-slate-50"}`}>
       
-      {/* 1. DEEP OCEAN BACKGROUND */}
+      {/* BACKGROUND AMBIENCE */}
       <div className="absolute inset-0 pointer-events-none">
-         <div className="absolute inset-0 bg-gradient-to-b from-[#001829] via-[#00223a] to-[#001829]" />
-         {/* Moving Light Caustics */}
-         <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-[#00aeef] rounded-full blur-[150px] opacity-[0.05]" />
-         <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-[#005691] rounded-full blur-[180px] opacity-[0.08]" />
-         <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.03] mix-blend-overlay" />
+         {/* Gradient Overlay */}
+         <div className={`absolute inset-0 bg-gradient-to-b transition-colors duration-700
+            ${isDark ? "from-[#001829] via-[#00223a] to-[#001829]" : "from-slate-50 via-slate-100 to-slate-50"}`} 
+         />
          
-         {/* Grid Texture */}
-         <div className="absolute inset-0 opacity-[0.05]" 
-              style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%2300aeef' fill-opacity='1' fill-rule='evenodd'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40'/%3E%3C/g%3E%3C/svg%3E")` }} 
+         {/* Moving Blobs */}
+         <div className={`absolute top-0 right-0 w-[800px] h-[800px] rounded-full blur-[150px] transition-opacity duration-700
+            ${isDark ? "bg-[#00aeef] opacity-[0.05]" : "bg-sky-200 opacity-[0.4]"}`} 
+         />
+         <div className={`absolute bottom-0 left-0 w-[600px] h-[600px] rounded-full blur-[180px] transition-opacity duration-700
+            ${isDark ? "bg-[#005691] opacity-[0.08]" : "bg-blue-200 opacity-[0.3]"}`} 
+         />
+         
+         {/* Noise & Grid */}
+         <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.03] mix-blend-overlay" />
+         <div className={`absolute inset-0 opacity-[0.05] transition-opacity duration-700
+            ${isDark ? "invert-0" : "invert"}`} 
+            style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%2300aeef' fill-opacity='1' fill-rule='evenodd'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40'/%3E%3C/g%3E%3C/svg%3E")` }} 
          />
       </div>
 
@@ -168,7 +194,8 @@ export default function Expectations() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#00aeef]/10 border border-[#00aeef]/20 backdrop-blur-md"
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-full border backdrop-blur-md
+               ${isDark ? "bg-[#00aeef]/10 border-[#00aeef]/20" : "bg-white border-slate-200 shadow-sm"}`}
           >
              <Sparkles size={12} className="text-[#00aeef] fill-current animate-pulse" />
              <span className="text-[#00aeef] text-[10px] font-black uppercase tracking-[0.25em]">
@@ -180,7 +207,8 @@ export default function Expectations() {
             initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
-            className="text-5xl md:text-7xl font-black text-white tracking-tighter drop-shadow-2xl"
+            className={`text-5xl md:text-7xl font-black tracking-tighter drop-shadow-sm transition-colors
+               ${isDark ? "text-white" : "text-[#001829]"}`}
           >
             {CONTENT.title[lang]}
           </motion.h2>
@@ -195,7 +223,8 @@ export default function Expectations() {
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             transition={{ delay: 0.2 }}
-            className="text-white/60 max-w-2xl text-lg md:text-xl font-medium leading-relaxed"
+            className={`max-w-2xl text-lg md:text-xl font-medium leading-relaxed transition-colors
+               ${isDark ? "text-white/60" : "text-slate-500"}`}
           >
             {CONTENT.subtitle[lang]}
           </motion.p>
@@ -204,22 +233,23 @@ export default function Expectations() {
         {/* CARDS GRID */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {CONTENT.items.map((item, index) => (
-            <ExpectationCard key={item.id} item={item} index={index} lang={lang} />
+            <ExpectationCard key={item.id} item={item} index={index} lang={lang} isDark={isDark} />
           ))}
 
-          {/* FINAL CTA CARD - GLOWING */}
+          {/* FINAL CTA CARD */}
           <motion.div
              initial={{ opacity: 0, scale: 0.95 }}
              whileInView={{ opacity: 1, scale: 1 }}
              viewport={{ once: true }}
              transition={{ delay: 0.6 }}
-             className="relative group h-full min-h-[320px] p-1 rounded-[2.5rem] bg-gradient-to-br from-[#00aeef] to-[#005691] shadow-2xl shadow-[#00aeef]/20 cursor-pointer overflow-hidden"
+             className="relative group h-full min-h-[320px] p-1 rounded-[2.5rem] bg-gradient-to-br from-[#00aeef] to-[#005691] shadow-xl shadow-[#00aeef]/20 cursor-pointer overflow-hidden"
           >
              {/* Shimmer Overlay */}
              <div className="absolute inset-0 bg-[url('/noise.png')] opacity-20 mix-blend-overlay pointer-events-none" />
              <div className="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent z-10" />
 
-             <div className="relative h-full bg-white/5 backdrop-blur-sm rounded-[2.3rem] p-10 flex flex-col justify-between">
+             <div className={`relative h-full backdrop-blur-sm rounded-[2.3rem] p-10 flex flex-col justify-between
+                ${isDark ? "bg-[#001829]/10" : "bg-white/10"}`}>
                 <div>
                    <div className="w-14 h-14 rounded-2xl bg-white text-[#00aeef] flex items-center justify-center mb-6 shadow-[0_0_20px_rgba(255,255,255,0.3)]">
                       <Star size={28} className="fill-current" />
@@ -232,14 +262,14 @@ export default function Expectations() {
                    </p>
                 </div>
 
-                <div className="group/btn mt-8 flex items-center justify-between bg-black/20 hover:bg-black/30 p-2 rounded-full border border-white/10 transition-colors">
+                <Link href="/join" className="group/btn mt-8 flex items-center justify-between bg-black/20 hover:bg-black/30 p-2 rounded-full border border-white/10 transition-colors">
                    <span className="pl-6 text-xs font-bold uppercase tracking-widest text-white">
                       {lang === 'mn' ? 'Нэгдэх' : 'Apply Now'}
                    </span>
                    <div className="w-10 h-10 rounded-full bg-white text-[#00aeef] flex items-center justify-center group-hover/btn:scale-110 transition-transform">
                       <ArrowRight size={18} />
                    </div>
-                </div>
+                </Link>
              </div>
           </motion.div>
 

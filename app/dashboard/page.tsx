@@ -5,88 +5,62 @@ import Image from "next/image";
 import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
 import { 
-  Trophy, 
-  Clock, 
-  Calendar, 
-  MapPin, 
-  ArrowUpRight, 
-  Activity, 
-  CheckCircle2,
-  Shield,
-  Zap,
-  MoreHorizontal,
-  ChevronRight
+  Trophy, Clock, Calendar, MapPin, ArrowUpRight, Activity, 
+  CheckCircle2, Shield, Zap, MoreHorizontal, ChevronRight, Loader2,
+  Settings
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { useTheme } from "next-themes";
 import { useLanguage } from "../context/LanguageContext";
 
-// --- BRAND PALETTE ---
-const BRAND = {
-  sky: "#00aeef",
-  ocean: "#005691",
-  deep: "#001829",
-  gold: "#fbbf24",
-};
-
-// --- MOCK DATA (Ideally this comes from your /api/user endpoint later) ---
-const MOCK_STATS = {
-  points: 1250,
-  level: "Volunteer",
-  nextLevel: "Leader",
-  hours: 45,
-  eventsAttended: 12,
-  badges: ["Early Bird", "Eco Warrior", "Top Donor"],
-  recentActivity: [
-    { id: 1, type: "Event", title: "Clean Air Campaign", date: "2 days ago", points: "+50", status: "completed" },
-    { id: 2, type: "Donation", title: "Book Drive", date: "1 week ago", points: "+100", status: "verified" },
-    { id: 3, type: "Workshop", title: "Mental Health 101", date: "2 weeks ago", points: "+30", status: "completed" },
-  ]
-};
-
-// --- COMPONENTS ---
-
-const DashboardCard = ({ children, className = "", delay = 0 }: any) => (
+// --- SUB-COMPONENT: THEMED CARD ---
+const DashboardCard = ({ children, className = "", delay = 0, isDark }: any) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
     transition={{ delay, duration: 0.5 }}
-    className={`relative bg-[#001d30]/60 backdrop-blur-xl border border-white/5 rounded-[2rem] p-6 overflow-hidden ${className}`}
+    className={`relative backdrop-blur-xl border rounded-[2.5rem] p-6 overflow-hidden transition-all duration-500
+      ${isDark 
+        ? "bg-[#001d30]/60 border-white/5 shadow-2xl shadow-black/20" 
+        : "bg-white border-slate-200 shadow-xl shadow-slate-200/40"} 
+      ${className}`}
   >
-    <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
+    <div className={`absolute inset-0 bg-gradient-to-br pointer-events-none opacity-50
+      ${isDark ? "from-white/5 to-transparent" : "from-slate-50 to-transparent"}`} />
     {children}
   </motion.div>
 );
 
-const StatRing = ({ percentage }: { percentage: number }) => {
-  const radius = 30;
-  const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (percentage / 100) * circumference;
-
-  return (
-    <div className="relative w-20 h-20 flex items-center justify-center">
-      <svg className="transform -rotate-90 w-full h-full">
-        <circle cx="40" cy="40" r={radius} stroke="#002b49" strokeWidth="6" fill="transparent" />
-        <motion.circle
-          cx="40" cy="40" r={radius}
-          stroke={BRAND.sky}
-          strokeWidth="6"
-          fill="transparent"
-          strokeDasharray={circumference}
-          initial={{ strokeDashoffset: circumference }}
-          animate={{ strokeDashoffset }}
-          transition={{ duration: 1.5, ease: "easeOut" }}
-          strokeLinecap="round"
-        />
-      </svg>
-      <div className="absolute text-xs font-bold text-white">{percentage}%</div>
-    </div>
-  );
-};
-
 export default function Dashboard() {
   const { user, isLoaded } = useUser();
   const { language: lang } = useLanguage();
+  const { theme } = useTheme();
+  
+  const [mounted, setMounted] = useState(false);
   const [greeting, setGreeting] = useState("");
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  // Sync with theme and hydration
+  useEffect(() => setMounted(true), []);
+  const isDark = mounted && (theme === "dark" || !theme);
+
+  useEffect(() => {
+    async function fetchDashboard() {
+      try {
+        const res = await fetch('/api/user/dashboard');
+        if (res.ok) {
+          const json = await res.json();
+          setData(json);
+        }
+      } catch (error) {
+        console.error("Failed to load dashboard", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    if (isLoaded && user) fetchDashboard();
+  }, [isLoaded, user]);
 
   useEffect(() => {
     const hour = new Date().getHours();
@@ -95,210 +69,230 @@ export default function Dashboard() {
     else setGreeting(lang === 'mn' ? "Оройн мэнд" : "Good Evening");
   }, [lang]);
 
-  if (!isLoaded) {
+  if (!mounted || !isLoaded || loading) {
     return (
-      <div className="min-h-screen bg-[#001829] flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-[#00aeef] border-t-transparent rounded-full animate-spin" />
+      <div className={`min-h-screen flex items-center justify-center transition-colors duration-700
+        ${isDark ? "bg-[#001829]" : "bg-slate-50"}`}>
+        <div className="flex flex-col items-center gap-4">
+            <Loader2 className="w-8 h-8 text-[#00aeef] animate-spin" />
+            <p className={`text-sm tracking-widest uppercase font-bold ${isDark ? "text-white/40" : "text-slate-400"}`}>
+              {lang === 'mn' ? 'Ачаалж байна...' : 'Loading Portal...'}
+            </p>
+        </div>
       </div>
     );
   }
 
-  // Fallback if metadata isn't synced yet
-  const studentId = (user?.unsafeMetadata?.studentId as string) || "ID PENDING";
-  const fullName = user?.fullName || (user?.unsafeMetadata?.fullName as string) || "Member";
+  const progressPercent = data?.stats ? Math.min((data.stats.points / data.stats.targetPoints) * 100, 100) : 0;
+  const formatDate = (dateString: string) => {
+    if (!dateString) return "TBD";
+    return new Date(dateString).toLocaleDateString(lang === 'mn' ? 'mn-MN' : 'en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' });
+  };
 
   return (
-    <div className="min-h-screen bg-[#001829] text-white pt-28 pb-12 px-6 overflow-x-hidden font-sans">
+    <div className={`min-h-screen transition-colors duration-700 pt-28 pb-12 px-6 overflow-x-hidden font-sans
+      ${isDark ? "bg-[#001829] text-white" : "bg-slate-50 text-slate-900"}`}>
       
-      {/* 1. ATMOSPHERE */}
+      {/* --- ATMOSPHERE --- */}
       <div className="absolute inset-0 pointer-events-none fixed">
-         <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-[#00aeef] rounded-full blur-[250px] opacity-[0.05]" />
-         <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-[#005691] rounded-full blur-[200px] opacity-[0.08]" />
+         <div className={`absolute top-0 right-0 w-[800px] h-[800px] rounded-full blur-[250px] transition-opacity duration-700
+            ${isDark ? "bg-[#00aeef] opacity-[0.05]" : "bg-sky-200 opacity-[0.4]"}`} />
+         <div className={`absolute bottom-0 left-0 w-[600px] h-[600px] rounded-full blur-[200px] transition-opacity duration-700
+            ${isDark ? "bg-[#005691] opacity-[0.08]" : "bg-blue-100 opacity-[0.3]"}`} />
          <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.03] mix-blend-overlay" />
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto">
         
-        {/* 2. HEADER */}
+        {/* --- HEADER --- */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-6">
            <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
-              <p className="text-[#00aeef] text-xs font-black uppercase tracking-widest mb-2 flex items-center gap-2">
+              <p className="text-[#00aeef] text-[10px] font-black uppercase tracking-[0.2em] mb-3 flex items-center gap-2">
                  <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_10px_#22c55e]" />
-                 Online Now
+                 {lang === 'mn' ? 'ШУУД' : 'Online Now'}
               </p>
-              <h1 className="text-4xl md:text-5xl font-black tracking-tight text-white">
-                 {greeting}, <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00aeef] to-[#40c9ff]">{user?.firstName}</span>
+              <h1 className={`text-4xl md:text-6xl font-black tracking-tighter leading-none
+                ${isDark ? "text-white" : "text-[#001829]"}`}>
+                 {greeting}, <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00aeef] to-[#40c9ff]">
+                    {data?.profile?.fullName || user?.firstName}
+                 </span>
               </h1>
            </motion.div>
 
-           <motion.div 
-             initial={{ opacity: 0, x: 20 }} 
-             animate={{ opacity: 1, x: 0 }}
-             className="flex gap-4"
-           >
-              <Link href="/events" className="px-6 py-3 bg-[#00aeef] hover:bg-[#009bd5] text-white font-bold rounded-xl text-xs uppercase tracking-wide transition-all shadow-lg shadow-[#00aeef]/20 flex items-center gap-2">
-                 <Calendar size={16} />
+           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="flex gap-3">
+              <Link href="/events" className="px-6 py-3.5 bg-[#00aeef] hover:bg-[#009bd5] text-white font-black text-[10px] uppercase tracking-widest rounded-2xl shadow-xl shadow-[#00aeef]/20 transition-all flex items-center gap-2 active:scale-95">
+                 <Calendar size={14} />
                  {lang === 'mn' ? 'Арга Хэмжээ' : 'Events'}
               </Link>
-              <button className="px-6 py-3 border border-white/10 hover:bg-white/5 rounded-xl text-xs font-bold uppercase tracking-wide transition-all">
-                 {lang === 'mn' ? 'Тохиргоо' : 'Settings'}
+              <button className={`p-3.5 border rounded-2xl transition-all active:scale-95
+                ${isDark ? "border-white/10 hover:bg-white/5 text-white" : "border-slate-200 bg-white text-slate-500 shadow-sm"}`}>
+                 <Settings size={18} />
               </button>
            </motion.div>
         </div>
 
-        {/* 3. BENTO GRID */}
-        <div className="grid grid-cols-1 md:grid-cols-6 lg:grid-cols-4 gap-6 auto-rows-[minmax(180px,auto)]">
+        {/* --- BENTO GRID --- */}
+        <div className="grid grid-cols-1 md:grid-cols-6 lg:grid-cols-4 gap-6">
            
-           {/* A. DIGITAL ID CARD (Large - 2 cols) */}
-           <DashboardCard className="md:col-span-3 lg:col-span-2 row-span-2 !p-0 group cursor-pointer border-[#00aeef]/20">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-[#00aeef] rounded-full blur-[100px] opacity-10 group-hover:opacity-20 transition-opacity" />
-              
+           {/* A. DIGITAL ID CARD */}
+           <DashboardCard isDark={isDark} className="md:col-span-3 lg:col-span-2 row-span-2 !p-0 group border-[#00aeef]/20">
               <div className="relative h-full p-8 flex flex-col justify-between z-10">
                  <div className="flex justify-between items-start">
-                    <div className="flex items-center gap-4">
-                       <div className="w-16 h-16 rounded-2xl bg-white p-1 shadow-lg overflow-hidden">
-                          <Image src={user?.imageUrl || "/logo.jpg"} alt="User" width={64} height={64} className="rounded-xl w-full h-full object-cover" />
+                    <div className="flex items-center gap-5">
+                       <div className={`w-20 h-20 rounded-3xl p-1 shadow-2xl overflow-hidden rotate-[-4deg] group-hover:rotate-0 transition-transform duration-500
+                         ${isDark ? "bg-white" : "bg-white border border-slate-100"}`}>
+                          <Image src={user?.imageUrl || "/logo.jpg"} alt="User" width={80} height={80} className="rounded-2xl w-full h-full object-cover" />
                        </div>
                        <div>
-                          <h2 className="text-2xl font-black leading-none mb-1">{fullName}</h2>
-                          <p className="text-white/50 text-sm font-medium">{studentId}</p>
+                          <h2 className={`text-2xl font-black leading-none mb-2 ${isDark ? "text-white" : "text-[#001829]"}`}>
+                            {data?.profile?.fullName}
+                          </h2>
+                          <p className={`text-[10px] font-black uppercase tracking-widest ${isDark ? "text-white/40" : "text-slate-400"}`}>
+                            {data?.profile?.studentId || "S.ID2025XXX"}
+                          </p>
                        </div>
                     </div>
-                    <div className="bg-[#00aeef]/10 border border-[#00aeef]/30 p-2 rounded-lg">
+                    <div className={`p-3 rounded-2xl transition-colors ${isDark ? "bg-[#00aeef]/10 border border-[#00aeef]/20" : "bg-sky-50 border border-sky-100"}`}>
                        <Shield size={20} className="text-[#00aeef]" />
                     </div>
                  </div>
 
-                 <div className="space-y-6 mt-8">
-                    <div className="space-y-2">
-                       <div className="flex justify-between text-xs font-bold uppercase tracking-widest text-white/40">
-                          <span>Progress to {MOCK_STATS.nextLevel}</span>
-                          <span>{MOCK_STATS.points} / 2000 XP</span>
+                 <div className="space-y-8 mt-12">
+                    <div className="space-y-3">
+                       <div className={`flex justify-between text-[10px] font-black uppercase tracking-widest ${isDark ? "text-white/40" : "text-slate-400"}`}>
+                          <span>Next Level: {data?.stats?.nextLevel || "Pro"}</span>
+                          <span className="text-[#00aeef]">{data?.stats?.points || 0} XP</span>
                        </div>
-                       <div className="h-2 w-full bg-black/20 rounded-full overflow-hidden">
+                       <div className={`h-2.5 w-full rounded-full overflow-hidden ${isDark ? "bg-black/20" : "bg-slate-100"}`}>
                           <motion.div 
                              initial={{ width: 0 }}
-                             animate={{ width: "65%" }}
+                             animate={{ width: `${progressPercent}%` }}
                              transition={{ duration: 1.5, ease: "circOut" }}
-                             className="h-full bg-gradient-to-r from-[#00aeef] to-[#40c9ff] shadow-[0_0_15px_#00aeef]" 
+                             className="h-full bg-[#00aeef] shadow-[0_0_15px_rgba(0,174,239,0.5)]" 
                           />
                        </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
-                       <div className="bg-black/20 rounded-xl p-4 border border-white/5">
-                          <p className="text-[#00aeef] text-xs font-bold uppercase mb-1">Rank</p>
-                          <p className="text-xl font-bold">{MOCK_STATS.level}</p>
+                       <div className={`rounded-3xl p-5 border transition-all ${isDark ? "bg-black/20 border-white/5" : "bg-slate-50 border-slate-100"}`}>
+                          <p className="text-[#00aeef] text-[9px] font-black uppercase tracking-[0.2em] mb-2">Member Rank</p>
+                          <p className={`text-xl font-black ${isDark ? "text-white" : "text-[#001829]"}`}>{data?.stats?.level || "Volunteer"}</p>
                        </div>
-                       <div className="bg-black/20 rounded-xl p-4 border border-white/5">
-                          <p className="text-[#fbbf24] text-xs font-bold uppercase mb-1">Impact</p>
-                          <p className="text-xl font-bold">{MOCK_STATS.hours}h Vol.</p>
+                       <div className={`rounded-3xl p-5 border transition-all ${isDark ? "bg-black/20 border-white/5" : "bg-slate-50 border-slate-100"}`}>
+                          <p className="text-[#fbbf24] text-[9px] font-black uppercase tracking-[0.2em] mb-2">Activity Hours</p>
+                          <p className={`text-xl font-black ${isDark ? "text-white" : "text-[#001829]"}`}>{data?.stats?.hours || 0}h</p>
                        </div>
                     </div>
                  </div>
               </div>
            </DashboardCard>
 
-           {/* B. UPCOMING EVENT (Medium - 2 Cols) */}
-           <DashboardCard className="md:col-span-3 lg:col-span-2 !p-0 group bg-gradient-to-br from-[#005691]/80 to-[#001d30] border-[#00aeef]/20" delay={0.1}>
-              <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1544027993-37dbfe43562a?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center opacity-30 group-hover:opacity-40 transition-opacity mix-blend-overlay" />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#00101a] via-[#00101a]/20 to-transparent" />
+           {/* B. NEXT EVENT TILE */}
+           <DashboardCard isDark={isDark} className="md:col-span-3 lg:col-span-2 !p-0 group" delay={0.1}>
+              <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1544027993-37dbfe43562a?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center transition-all duration-700 group-hover:scale-105" />
+              <div className={`absolute inset-0 transition-colors duration-500
+                ${isDark ? "bg-[#001829]/80" : "bg-white/80"}`} />
               
               <div className="relative z-10 h-full p-8 flex flex-col justify-between">
-                 <div className="flex justify-between">
-                    <span className="bg-[#00aeef] text-white text-[10px] font-black uppercase px-3 py-1 rounded-full shadow-lg">Next Event</span>
-                    <ArrowUpRight className="text-white group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                 <div className="flex justify-between items-center">
+                    <span className="bg-[#00aeef] text-white text-[9px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full shadow-lg">Next Event</span>
+                    <div className={`p-2 rounded-full transition-colors ${isDark ? "bg-white/10" : "bg-white shadow-sm"}`}>
+                      <ArrowUpRight size={16} className={isDark ? "text-white" : "text-[#001829]"} />
+                    </div>
                  </div>
                  
                  <div>
-                    <div className="flex items-center gap-2 text-sky-300 text-xs font-bold uppercase tracking-widest mb-2">
+                    <div className="flex items-center gap-2 text-[#00aeef] text-[10px] font-black uppercase tracking-[0.2em] mb-3">
                        <Clock size={12} />
-                       <span>Tomorrow, 09:00</span>
+                       <span>{data?.nextEvent ? formatDate(data.nextEvent.date) : "No Upcoming Events"}</span>
                     </div>
-                    <h3 className="text-2xl font-black text-white leading-tight mb-2">
-                       Youth Leadership Summit
+                    <h3 className={`text-3xl font-black tracking-tight leading-none mb-3 ${isDark ? "text-white" : "text-[#001829]"}`}>
+                       {data?.nextEvent ? (data.nextEvent.title?.en || data.nextEvent.title) : "Stay Tuned"}
                     </h3>
-                    <p className="text-white/60 text-sm flex items-center gap-2">
-                       <MapPin size={14} /> Shangri-La Hall
+                    <p className={`text-xs font-bold flex items-center gap-2 opacity-60 ${isDark ? "text-white" : "text-slate-600"}`}>
+                       <MapPin size={14} className="text-[#00aeef]" /> {data?.nextEvent ? (data.nextEvent.location?.en || data.nextEvent.location) : "Main Hall"}
                     </p>
                  </div>
               </div>
            </DashboardCard>
 
-           {/* C. QUICK STAT 1 (Small) */}
-           <DashboardCard className="md:col-span-2 lg:col-span-1 flex flex-col justify-between group" delay={0.2}>
-              <div className="w-10 h-10 rounded-full bg-[#fbbf24]/10 flex items-center justify-center text-[#fbbf24]">
-                 <Trophy size={20} />
+           {/* C. QUICK STAT - BADGES */}
+           <DashboardCard isDark={isDark} className="md:col-span-2 lg:col-span-1 flex flex-col justify-between group" delay={0.2}>
+              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-transform group-hover:rotate-12
+                ${isDark ? "bg-[#fbbf24]/10 text-[#fbbf24]" : "bg-amber-50 text-amber-500"}`}>
+                 <Trophy size={24} />
               </div>
-              <div>
-                 <h4 className="text-3xl font-black text-white">{MOCK_STATS.badges.length}</h4>
-                 <p className="text-white/40 text-xs font-bold uppercase tracking-wider">Badges Earned</p>
-              </div>
-              <div className="absolute bottom-6 right-6 opacity-0 group-hover:opacity-100 transition-opacity">
-                 <ChevronRight size={16} className="text-[#fbbf24]" />
+              <div className="mt-8">
+                 <h4 className={`text-4xl font-black ${isDark ? "text-white" : "text-[#001829]"}`}>{data?.stats?.badges?.length || 0}</h4>
+                 <p className={`text-[9px] font-black uppercase tracking-widest opacity-40 ${isDark ? "text-white" : "text-slate-900"}`}>Recognition</p>
               </div>
            </DashboardCard>
 
-           {/* D. QUICK STAT 2 (Small) */}
-           <DashboardCard className="md:col-span-2 lg:col-span-1 flex flex-col justify-between group" delay={0.3}>
-              <div className="w-10 h-10 rounded-full bg-[#10b981]/10 flex items-center justify-center text-[#10b981]">
-                 <CheckCircle2 size={20} />
+           {/* D. QUICK STAT - EVENTS */}
+           <DashboardCard isDark={isDark} className="md:col-span-2 lg:col-span-1 flex flex-col justify-between group" delay={0.3}>
+              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-transform group-hover:rotate-12
+                ${isDark ? "bg-[#10b981]/10 text-[#10b981]" : "bg-emerald-50 text-emerald-500"}`}>
+                 <CheckCircle2 size={24} />
               </div>
-              <div>
-                 <h4 className="text-3xl font-black text-white">{MOCK_STATS.eventsAttended}</h4>
-                 <p className="text-white/40 text-xs font-bold uppercase tracking-wider">Events Attended</p>
+              <div className="mt-8">
+                 <h4 className={`text-4xl font-black ${isDark ? "text-white" : "text-[#001829]"}`}>{data?.stats?.eventsAttended || 0}</h4>
+                 <p className={`text-[9px] font-black uppercase tracking-widest opacity-40 ${isDark ? "text-white" : "text-slate-900"}`}>Activities</p>
               </div>
            </DashboardCard>
 
-           {/* E. ACTIVITY FEED (Wide or Tall depending on layout) */}
-           <DashboardCard className="md:col-span-2 lg:col-span-2 row-span-2 !p-0" delay={0.4}>
-              <div className="p-6 border-b border-white/5 flex justify-between items-center bg-black/10">
-                 <h3 className="font-bold text-white text-sm uppercase tracking-wide flex items-center gap-2">
-                    <Activity size={16} className="text-[#00aeef]" /> Recent Activity
+           {/* E. ACTIVITY FEED */}
+           <DashboardCard isDark={isDark} className="md:col-span-2 lg:col-span-2 row-span-2 !p-0" delay={0.4}>
+              <div className={`p-6 border-b flex justify-between items-center ${isDark ? "border-white/5 bg-white/5" : "border-slate-100 bg-slate-50"}`}>
+                 <h3 className={`font-black text-[10px] uppercase tracking-[0.2em] flex items-center gap-2 ${isDark ? "text-white" : "text-slate-900"}`}>
+                    <Activity size={14} className="text-[#00aeef]" /> {lang === 'mn' ? 'Сүүлийн үйлдлүүд' : 'Recent Activity'}
                  </h3>
-                 <MoreHorizontal size={16} className="text-white/30 cursor-pointer hover:text-white" />
+                 <MoreHorizontal size={16} className="opacity-20 cursor-pointer hover:opacity-100" />
               </div>
               
-              <div className="p-4 space-y-2">
-                 {MOCK_STATS.recentActivity.map((activity) => (
-                    <div key={activity.id} className="group flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 transition-colors cursor-default">
-                       <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs shrink-0
-                          ${activity.type === 'Event' ? 'bg-[#00aeef]/10 text-[#00aeef]' : ''}
-                          ${activity.type === 'Donation' ? 'bg-[#fbbf24]/10 text-[#fbbf24]' : ''}
-                          ${activity.type === 'Workshop' ? 'bg-[#f43f5e]/10 text-[#f43f5e]' : ''}
-                       `}>
-                          {activity.type[0]}
-                       </div>
-                       <div className="flex-1 min-w-0">
-                          <h4 className="text-sm font-bold text-white truncate">{activity.title}</h4>
-                          <p className="text-xs text-white/40">{activity.date}</p>
-                       </div>
-                       <div className="text-right">
-                          <span className="text-xs font-bold text-green-400 bg-green-400/10 px-2 py-1 rounded-md">
-                             {activity.points}
-                          </span>
-                       </div>
+              <div className="p-4 space-y-2 max-h-[340px] overflow-y-auto custom-scrollbar">
+                 {data?.recentActivity?.length > 0 ? (
+                    data.recentActivity.map((activity: any, index: number) => (
+                        <div key={index} className={`group flex items-center gap-4 p-4 rounded-3xl transition-all cursor-default
+                          ${isDark ? "hover:bg-white/5" : "hover:bg-slate-50"}`}>
+                        <div className={`w-11 h-11 rounded-2xl flex items-center justify-center font-black text-xs shrink-0 
+                          ${isDark ? "bg-[#00aeef]/10 text-[#00aeef]" : "bg-sky-50 text-[#00aeef]"}`}>
+                            {activity.type.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <h4 className={`text-sm font-black truncate ${isDark ? "text-white" : "text-slate-900"}`}>{activity.title}</h4>
+                            <p className={`text-[10px] font-bold opacity-40 uppercase tracking-widest ${isDark ? "text-white" : "text-slate-500"}`}>{formatDate(activity.date)}</p>
+                        </div>
+                        <div className="text-right">
+                            <span className="text-[10px] font-black text-[#10b981] bg-[#10b981]/10 px-3 py-1.5 rounded-full">
+                                +{activity.points}
+                            </span>
+                        </div>
+                        </div>
+                    ))
+                 ) : (
+                    <div className="text-center py-20 opacity-20 text-xs font-bold uppercase tracking-widest">
+                        No activity recorded
                     </div>
-                 ))}
+                 )}
               </div>
               
-              <div className="p-4 border-t border-white/5 mt-auto">
-                 <button className="w-full py-2 text-xs font-bold uppercase tracking-widest text-white/40 hover:text-white transition-colors">
-                    View Full History
+              <div className={`p-4 border-t mt-auto ${isDark ? "border-white/5" : "border-slate-100"}`}>
+                 <button className={`w-full py-2 text-[10px] font-black uppercase tracking-[0.3em] opacity-40 hover:opacity-100 hover:text-[#00aeef] transition-all`}>
+                    {lang === 'mn' ? 'Бүх түүхийг харах' : 'Full History'}
                  </button>
               </div>
            </DashboardCard>
 
            {/* F. CTA TILE */}
-           <DashboardCard className="md:col-span-4 lg:col-span-2 bg-[#00aeef] !border-none group cursor-pointer" delay={0.5}>
+           <DashboardCard isDark={isDark} className="md:col-span-4 lg:col-span-2 bg-[#00aeef] !border-none group cursor-pointer shadow-2xl shadow-[#00aeef]/30" delay={0.5}>
               <div className="absolute inset-0 bg-[url('/noise.png')] opacity-10 mix-blend-overlay" />
-              <div className="relative z-10 flex items-center justify-between h-full">
+              <div className="relative z-10 flex items-center justify-between h-full py-2">
                  <div>
-                    <h3 className="text-2xl font-black text-white mb-1">Make an Impact</h3>
-                    <p className="text-white/80 text-xs font-medium">Donate now to support the next campaign.</p>
+                    <h3 className="text-2xl font-black text-white mb-2 tracking-tight">Make an Impact</h3>
+                    <p className="text-white/80 text-xs font-bold uppercase tracking-wider">Donate now to support the next campaign.</p>
                  </div>
-                 <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-[#00aeef] shadow-lg group-hover:scale-110 transition-transform">
-                    <Zap size={24} className="fill-current" />
+                 <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center text-[#00aeef] shadow-2xl group-hover:scale-110 transition-transform">
+                    <Zap size={28} className="fill-current" />
                  </div>
               </div>
            </DashboardCard>

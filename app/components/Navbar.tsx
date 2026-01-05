@@ -1,292 +1,254 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
-import {
+import Image from "next/image";
+import { 
   Home,
   Users,
-  Calendar,
-  LogIn,
-  HandHeart,
   Sparkles,
-  ChevronRight,
-  ArrowRight,
-  Heart,
-  LayoutDashboard // Added Icon for Dashboard
+  LayoutGrid,
+  Compass,
+  Globe,
+  Sun,
+  Moon,
+  LogIn,
+  UserCircle,
+  Calendar,
+  HandHeart,
+  Heart
 } from "lucide-react";
-import {
-  motion,
-  useScroll,
-  useMotionValueEvent,
-  useSpring,
-  useTransform,
-  useMotionValue,
-} from "framer-motion";
+import { motion, useScroll, useMotionValueEvent, AnimatePresence } from "framer-motion";
+import { useTheme } from "next-themes";
 import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import { useLanguage } from "../context/LanguageContext";
 
-// --- CONFIG ---
 const CONTENT = {
   logo: { mn: "UNICEF CLUB", en: "UNICEF CLUB" },
-  sub: { mn: "MONGOLIA", en: "MONGOLIA" },
   login: { mn: "Нэвтрэх", en: "Sign In" },
-  join: { mn: "Нэгдэх", en: "Join Us" },
-  dashboard: { mn: "Миний Булан", en: "Dashboard" }, // Updated label
+  register: { mn: "Бүртгүүлэх", en: "Register" },
+  dashboard: { mn: "Самбар", en: "Panel" },
 };
 
-// --- MAGNETIC BUTTON ---
-const MagneticWrapper = ({ children, strength = 0.5 }: { children: React.ReactNode; strength?: number }) => {
-  const ref = useRef<HTMLDivElement>(null);
-  const position = { x: useMotionValue(0), y: useMotionValue(0) };
-
-  const handleMouse = (e: React.MouseEvent) => {
-    const { clientX, clientY } = e;
-    const { height, width, left, top } = ref.current!.getBoundingClientRect();
-    const middleX = clientX - (left + width / 2);
-    const middleY = clientY - (top + height / 2);
-    position.x.set(middleX * strength);
-    position.y.set(middleY * strength);
-  };
-
-  const reset = () => { position.x.set(0); position.y.set(0); };
-  const springX = useSpring(position.x, { stiffness: 150, damping: 15, mass: 0.1 });
-  const springY = useSpring(position.y, { stiffness: 150, damping: 15, mass: 0.1 });
-
-  return (
-    <motion.div ref={ref} onMouseMove={handleMouse} onMouseLeave={reset} style={{ x: springX, y: springY }}>
-      {children}
-    </motion.div>
-  );
-};
-
-export default function UnicefNavbar() {
+export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
   const { language: lang, setLanguage } = useLanguage();
-  
-  // Scroll Hooks
-  const { scrollY, scrollYProgress } = useScroll();
-  const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30, restDelta: 0.001 });
-
-  // Transforms
-  const width = useTransform(scrollY, [0, 100], ["1200px", "1080px"]); 
-  const y = useTransform(scrollY, [0, 100], [24, 12]);
-  
-  const navBg = useTransform(scrollY, [0, 100], ["rgba(0, 174, 239, 1)", "rgba(255, 255, 255, 0.9)"]);
-  const borderColor = useTransform(scrollY, [0, 100], ["rgba(255,255,255,0.15)", "rgba(0, 174, 239, 0.15)"]);
-  const shadow = useTransform(scrollY, [0, 100], ["0px 10px 30px -10px rgba(0, 174, 239, 0.2)", "0px 10px 40px -10px rgba(0,0,0,0.1)"]);
-  
-  const widthSpring = useSpring(width, { stiffness: 100, damping: 20 });
-  const ySpring = useSpring(y, { stiffness: 100, damping: 20 });
+  const { resolvedTheme, setTheme } = useTheme();
+  const { scrollY } = useScroll();
 
   useEffect(() => setMounted(true), []);
-  useMotionValueEvent(scrollY, "change", (latest) => setIsScrolled(latest > 50));
+
+  useMotionValueEvent(scrollY, "change", (latest) => {
+    setIsScrolled(latest > 50);
+  });
+
   if (!mounted) return null;
 
+  const isDark = resolvedTheme === "dark";
   const toggleLanguage = () => setLanguage(lang === "mn" ? "en" : "mn");
+  const toggleTheme = () => setTheme(isDark ? "light" : "dark");
 
   const desktopNav = [
-    { name: { mn: "Нүүр", en: "Home" }, href: "/", icon: Home },
-    { name: { mn: "Бидний тухай", en: "About" }, href: "/about", icon: Users },
-    { name: { mn: "Арга хэмжээ", en: "Events" }, href: "/events", icon: Calendar, badge: true },
-    { name: { mn: "Үр нөлөө", en: "Impact" }, href: "/impact", icon: Sparkles },
+    { name: { mn: "Нүүр", en: "Home" }, href: "/" },
+    { name: { mn: "Бидний тухай", en: "About Us" }, href: "/about" },
+    { name: { mn: "Арга хэмжээ", en: "Events" }, href: "/events" },
+    { name: { mn: "Үр нөлөө", en: "Impact" }, href: "/impact" },
   ];
 
   const mobileNav = [
     { id: "home", icon: Home, href: "/", label: { mn: "Нүүр", en: "Home" } },
     { id: "events", icon: Calendar, href: "/events", label: { mn: "Арга хэмжээ", en: "Events" } },
     { id: "join", icon: HandHeart, href: "/join", label: { mn: "Нэгдэх", en: "Join" }, isMain: true },
-    { id: "dashboard", icon: Users, href: "/dashboard", label: { mn: "Профайл", en: "Profile" } },
+    { id: "dashboard", icon: LayoutGrid, href: "/dashboard", label: { mn: "Самбар", en: "Panel" } },
     { id: "impact", icon: Heart, href: "/impact", label: { mn: "Үр нөлөө", en: "Impact" } },
   ];
 
   return (
     <>
       {/* ========================================================= */}
-      {/* 1. DESKTOP HEADER                                        */}
+      {/* 1. DESKTOP HEADER (Extra Rounded Pill)                   */}
       {/* ========================================================= */}
-      <motion.div 
-        style={{ width: widthSpring, y: ySpring }} 
-        className="fixed z-50 left-0 right-0 hidden md:flex justify-center pointer-events-none mx-auto h-[70px]"
+      <motion.header 
+        className="fixed z-50 left-0 right-0 hidden md:flex justify-center pointer-events-none"
+        animate={{ y: isScrolled ? 15 : 0 }}
+        transition={{ type: "spring", stiffness: 200, damping: 25 }}
       >
-        <div className="relative w-full h-full flex items-center">
+        <nav className={`
+          pointer-events-auto flex items-center justify-between transition-all duration-700
+          ${isScrolled 
+            ? "w-[85%] lg:w-[1100px] py-3 px-10 rounded-full border backdrop-blur-2xl shadow-2xl" 
+            : "w-full max-w-[1400px] py-8 px-12 bg-transparent border-transparent"}
+          ${isDark 
+            ? "bg-[#00101a]/80 border-sky-900/40 text-sky-50 shadow-black" 
+            : "bg-white/80 border-sky-100 text-[#001829] shadow-sky-900/10"}
+        `}>
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-4 group">
+             <div className="relative w-11 h-11 overflow-hidden rounded-full border-2 border-[#00aeef]/20 shadow-inner">
+                <Image src="/logo.jpg" alt="Logo" fill className="object-cover group-hover:scale-110 transition-transform duration-500" />
+             </div>
+             <span className="font-serif font-black text-2xl tracking-tighter text-[#00aeef]">{CONTENT.logo[lang]}</span>
+          </Link>
 
-          {/* LAYER A: VISUAL BACKGROUND (Clipped) */}
-          <motion.div 
-            style={{ backgroundColor: navBg, borderColor: borderColor, boxShadow: shadow }}
-            className="absolute inset-0 rounded-full border-2 overflow-hidden z-0 backdrop-blur-xl"
-          >
-             <div className="absolute inset-0 opacity-[0.05]"
-                  style={{ backgroundImage: `radial-gradient(circle, white 1px, transparent 1px)`, backgroundSize: '24px 24px' }} 
-             />
-             <motion.div 
-               style={{ scaleX }}
-               className="absolute bottom-0 left-6 right-6 h-[3px] bg-gradient-to-r from-transparent via-[#00aeef] to-transparent origin-left opacity-60"
-             />
-          </motion.div>
-
-          {/* LAYER B: CONTENT (Interactive - Not Clipped) */}
-          <div className="relative z-10 w-full px-6 flex items-center justify-between pointer-events-auto">
-            
-            {/* LOGO */}
-            <Link href="/" className="flex items-center gap-4 group/logo pr-6 border-r border-white/10 mr-2 flex-shrink-0">
-               <div className="relative">
-                   <motion.div 
-                     whileHover={{ rotate: 360 }}
-                     transition={{ duration: 0.7, ease: "circOut" }}
-                     className="relative rounded-full overflow-hidden border-2 border-white/40 shadow-inner w-11 h-11 bg-white"
-                   >
-                      <Image alt="Logo" src="/logo.jpg" fill className="object-cover" />
-                   </motion.div>
-                   <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-400 border-2 border-white rounded-full"></span>
-               </div>
-               
-               <div className="flex flex-col leading-none">
-                  <span className={`font-black text-lg tracking-tight whitespace-nowrap ${isScrolled ? "text-[#00aeef]" : "text-white"}`}>
-                     {CONTENT.logo[lang]}
-                  </span>
-                  <span className={`text-[9px] font-bold tracking-[0.3em] uppercase flex items-center gap-1 ${isScrolled ? "text-gray-400" : "text-white/80"}`}>
-                     {CONTENT.sub[lang]}
-                     <ChevronRight size={8} /> 2025
-                  </span>
-               </div>
-            </Link>
-
-            {/* NAVIGATION LINKS */}
-            <div className="flex items-center gap-1 flex-1 justify-center min-w-0">
-              {desktopNav.map((item) => {
-                 const isActive = pathname === item.href;
-                 return (
-                  <Link key={item.href} href={item.href} className="relative px-4 py-2 group/link overflow-hidden rounded-full flex-shrink-0">
-                    {isActive && (
-                      <motion.div 
-                        layoutId="desktopBubble"
-                        className={`absolute inset-0 rounded-full -z-10 ${isScrolled ? "bg-[#00aeef]/10" : "bg-white/20"}`}
-                        transition={{ type: "spring", bounce: 0.25, duration: 0.5 }}
-                      />
-                    )}
-                    
-                    <div className="flex items-center gap-2">
-                      <item.icon 
-                          size={14} 
-                          className={`transition-all duration-300 ${isScrolled ? (isActive ? "text-[#00aeef]" : "text-gray-400 group-hover/link:text-[#00aeef]") : "text-white"}`} 
-                      />
-                      <span className={`text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-colors duration-300 ${isScrolled ? (isActive ? "text-[#00aeef]" : "text-gray-600 group-hover/link:text-[#00aeef]") : "text-white"}`}>
-                          {item.name[lang]}
-                      </span>
-                      {item.badge && (
-                          <span className="relative flex h-2 w-2">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
-                          </span>
-                      )}
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
-
-            {/* RIGHT SIDE ACTIONS */}
-            <div className="flex items-center gap-6 border-l border-white/10 pl-6 ml-2 flex-shrink-0">
-               
-               {/* Language Toggle (z-100 to fix intersection issues) */}
-               <button 
-                 onClick={toggleLanguage} 
-                 className={`relative z-[100] w-9 h-9 flex items-center justify-center rounded-full border border-white/20 transition-all active:scale-95 ${isScrolled ? "text-gray-500 hover:bg-gray-100" : "text-white hover:bg-white/10"}`}
-               >
-                  <span className="text-[10px] font-black">{lang === "mn" ? "EN" : "MN"}</span>
-               </button>
-
-               {/* Logged In State: Show Dashboard Button + User Profile */}
-               <SignedIn>
-                   <div className="flex items-center gap-4 relative z-50">
-                       <Link href="/dashboard" className={`
-                          hidden lg:flex items-center gap-2 px-5 py-2 rounded-full border text-xs font-bold uppercase tracking-wide transition-all
-                          ${isScrolled 
-                             ? "border-[#00aeef] text-[#00aeef] hover:bg-[#00aeef] hover:text-white" 
-                             : "border-white/20 bg-white/10 text-white hover:bg-white hover:text-[#00aeef]"}
-                       `}>
-                          <LayoutDashboard size={14} />
-                          <span>{CONTENT.dashboard[lang]}</span>
-                       </Link>
-                       <div className="ring-2 ring-offset-2 ring-[#00aeef] rounded-full scale-110">
-                           <UserButton afterSignOutUrl="/" />
-                       </div>
-                   </div>
-               </SignedIn>
-
-               {/* Logged Out State: Join Button */}
-               <SignedOut>
-                 <div className="relative z-50"> 
-                   <MagneticWrapper strength={0.3}>
-                     <Link href="/join" className={`
-                        flex items-center gap-2 px-6 py-3 rounded-full text-xs font-black uppercase tracking-wide overflow-hidden transition-all whitespace-nowrap group shadow-lg
-                        ${isScrolled ? "bg-[#00aeef] text-white shadow-[#00aeef]/30" : "bg-white text-[#00aeef] shadow-white/10"}
-                     `}>
-                        <span className="relative z-10 flex items-center gap-2 group-hover:gap-3 transition-all">
-                            {CONTENT.join[lang]} <ArrowRight size={14} />
-                        </span>
-                        <div className="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1s_infinite] bg-gradient-to-r from-transparent via-white/30 to-transparent" />
-                     </Link>
-                   </MagneticWrapper>
-                 </div>
-               </SignedOut>
-            </div>
-
+          {/* Links */}
+          <div className="flex items-center gap-1 bg-current/5 p-1 rounded-full">
+            {desktopNav.map((item) => (
+              <Link 
+                key={item.href} 
+                href={item.href} 
+                className={`px-6 py-2 rounded-full text-[11px] font-black uppercase tracking-[0.1em] transition-all
+                  ${pathname === item.href 
+                    ? (isDark ? "bg-[#00aeef] text-[#00101a]" : "bg-[#001829] text-white") 
+                    : "opacity-60 hover:opacity-100"}`}
+              >
+                {item.name[lang]}
+              </Link>
+            ))}
           </div>
-        </div>
-      </motion.div>
+
+          {/* Desktop Actions */}
+          <div className="flex items-center gap-3">
+             <button onClick={toggleLanguage} className="w-11 h-11 rounded-full border flex items-center justify-center border-current/10 hover:bg-current/10 transition-all active:scale-90">
+                <Globe size={18}/>
+             </button>
+
+             <button onClick={toggleTheme} className="w-11 h-11 rounded-full border flex items-center justify-center border-current/10 hover:bg-current/10 transition-all active:scale-90">
+                {isDark ? <Sun size={18} /> : <Moon size={18} />}
+             </button>
+           
+             <div className="h-8 w-[1px] bg-current/10 mx-1" />
+
+             <SignedIn>
+                <div className="flex items-center gap-4">
+                    <Link href="/dashboard" className="text-[10px] font-black uppercase tracking-widest opacity-70 hover:opacity-100 border-b-2 border-[#00aeef]/50">
+                        {CONTENT.dashboard[lang]}
+                    </Link>
+                    <div className="scale-110"><UserButton /></div>
+                </div>
+             </SignedIn>
+             
+             <SignedOut>
+               <Link href="/sign-in">
+                  <button className="px-8 py-3 rounded-full bg-[#00aeef] hover:bg-sky-600 text-white text-[10px] font-black uppercase tracking-widest shadow-xl shadow-sky-900/20 transition-all active:scale-95">
+                    {CONTENT.login[lang]}
+                  </button>
+               </Link>
+             </SignedOut>
+          </div>
+        </nav>
+      </motion.header>
+
 
       {/* ========================================================= */}
-      {/* 2. MOBILE HEADER & 3. BOTTOM DOCK (No changes needed)    */}
+      {/* 2. MOBILE TOP BAR (High Obviousness Login)               */}
       {/* ========================================================= */}
-      <motion.div initial={{ y: -100 }} animate={{ y: 0 }} className="md:hidden fixed top-0 left-0 right-0 z-40 px-5 py-3 flex justify-between items-center bg-white/80 backdrop-blur-xl border-b border-white/20 shadow-sm">
-        <Link href="/" className="flex items-center gap-3">
-           <div className="relative">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#00aeef] to-[#00dbde] flex items-center justify-center text-white shadow-lg ring-2 ring-white">
-                  <HandHeart size={20} strokeWidth={2.5} />
-              </div>
-           </div>
-           <div className="flex flex-col">
-              <span className="font-black text-[#00aeef] text-sm leading-none tracking-tight">UNICEF</span>
-              <span className="font-bold text-gray-400 text-[9px] tracking-[0.2em] leading-none mt-1">MONGOLIA</span>
+      <div className="md:hidden fixed top-0 left-0 right-0 z-50 px-5 py-4 flex justify-between items-center pointer-events-none">
+        <Link href="/" className="pointer-events-auto">
+           <div className="p-1 rounded-full bg-white/10 backdrop-blur-xl border border-white/30 shadow-2xl">
+              <Image src="/logo.jpg" alt="Logo" width={38} height={38} className="rounded-full" />
            </div>
         </Link>
-        <div className="flex gap-3 items-center">
-            <button onClick={toggleLanguage} className="bg-gray-50 border border-gray-200 w-8 h-8 flex items-center justify-center rounded-full text-[10px] font-bold text-gray-600">{lang === 'mn' ? 'EN' : 'MN'}</button>
-            <SignedIn><UserButton afterSignOutUrl="/" /></SignedIn>
-            <SignedOut><Link href="/sign-in" className="bg-[#00aeef] text-white p-2 rounded-full shadow-lg shadow-blue-200"><LogIn size={18} /></Link></SignedOut>
-        </div>
-      </motion.div>
 
-      <div className="md:hidden fixed bottom-6 left-0 right-0 z-50 px-4 flex justify-center pointer-events-none">
-        <motion.nav initial={{ y: 100 }} animate={{ y: 0 }} className="pointer-events-auto flex items-end justify-between w-full max-w-[380px] px-3 py-3 rounded-[2.5rem] bg-white/90 backdrop-blur-xl shadow-[0_20px_40px_-10px_rgba(0,0,0,0.15)] border border-white/50">
+        <div className="flex items-center gap-2 pointer-events-auto">
+            {/* VERY OBVIOUS LOGIN BUTTON FOR MOBILE */}
+            <SignedOut>
+                <Link href="/sign-in">
+                    <motion.button 
+                      whileTap={{ scale: 0.9 }}
+                      className="px-5 h-11 rounded-full bg-[#00aeef] text-white text-[11px] font-black tracking-tighter uppercase shadow-lg shadow-sky-900/30 border border-sky-400/50"
+                    >
+                        {CONTENT.login[lang]}
+                    </motion.button>
+                </Link>
+            </SignedOut>
+
+            {/* Quick Action Circle Buttons */}
+            <div className="flex gap-1 p-1 rounded-full bg-black/5 backdrop-blur-md border border-white/10">
+                <button onClick={toggleLanguage} className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${isDark ? "text-sky-200" : "text-sky-900"}`}>
+                    <span className="text-[10px] font-black">{lang === 'mn' ? 'EN' : 'MN'}</span>
+                </button>
+                <button onClick={toggleTheme} className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${isDark ? "text-sky-200" : "text-sky-900"}`}>
+                    {isDark ? <Sun size={16} /> : <Moon size={16} />}
+                </button>
+            </div>
+
+            <SignedIn>
+                <div className="ml-1 scale-125 drop-shadow-lg"><UserButton /></div>
+            </SignedIn>
+        </div>
+      </div>
+
+
+      {/* ========================================================= */}
+      {/* 3. MOBILE BOTTOM DOCK (Extra Rounded & Labeled)          */}
+      {/* ========================================================= */}
+      <div className="md:hidden fixed bottom-6 left-0 right-0 z-50 px-5 flex justify-center">
+        <nav className={`
+          flex items-center justify-between w-full max-w-[440px] px-3 py-3 rounded-full border shadow-[0_-15px_50px_rgba(0,0,0,0.2)] backdrop-blur-3xl transition-all duration-700
+          ${isDark ? "bg-[#00101a]/95 border-sky-900/50 shadow-black" : "bg-white/95 border-sky-100 shadow-sky-900/10"}
+        `}>
           {mobileNav.map((item) => {
             const isActive = pathname === item.href;
+            
+            // Central Services Button
             if (item.isMain) {
               return (
-                <Link key={item.id} href={item.href} className="relative -top-8 group px-2">
-                   <div className="absolute inset-0 rounded-full animate-[ping_2s_cubic-bezier(0,0,0.2,1)_infinite] bg-[#00aeef] opacity-10 z-0"></div>
-                  <motion.div whileTap={{ scale: 0.9 }} className="w-16 h-16 rounded-full flex flex-col items-center justify-center bg-gradient-to-br from-[#00aeef] to-[#0077a3] text-white shadow-[0_10px_20px_rgba(0,174,239,0.4)] relative z-10 border-4 border-white/50">
-                    <item.icon size={26} strokeWidth={2.5} className={isActive ? "animate-pulse" : ""} />
+                <Link key={item.id} href={item.href} className="relative -top-10 flex flex-col items-center">
+                  <motion.div 
+                    whileTap={{ scale: 0.85 }}
+                    className={`w-16 h-16 rounded-full flex items-center justify-center shadow-2xl relative z-10
+                      ${isDark ? "bg-[#00aeef] text-[#00101a]" : "bg-[#001829] text-white"}`}
+                  >
+                    <item.icon size={30} strokeWidth={2.5} />
+                    <motion.div 
+                      animate={{ scale: [1, 1.5], opacity: [0.4, 0] }}
+                      transition={{ duration: 2.5, repeat: Infinity }}
+                      className="absolute inset-0 rounded-full bg-[#00aeef]"
+                    />
                   </motion.div>
-                  <div className="absolute -bottom-6 w-full text-center"><span className="text-[9px] font-black uppercase text-[#00aeef] tracking-wider bg-white/80 px-2 py-0.5 rounded-full shadow-sm backdrop-blur-sm">{item.label[lang]}</span></div>
+                  <span className={`mt-2 text-[10px] font-black uppercase tracking-widest ${isActive ? "text-[#00aeef]" : "opacity-40"}`}>
+                    {item.label[lang]}
+                  </span>
                 </Link>
               );
             }
+
+            // Standard Icons (Dynamic Dashboard/Login logic)
             return (
-              <Link key={item.id} href={item.href} className="flex-1 flex flex-col items-center justify-center h-14 w-14 group relative">
-                 {isActive && (<motion.div layoutId="mobileActiveBg" className="absolute inset-2 bg-blue-50 rounded-2xl -z-10" transition={{ type: "spring", stiffness: 300, damping: 30 }} />)}
-                <div className={`transition-all duration-300 transform ${isActive ? "text-[#00aeef] scale-110" : "text-gray-400 group-active:scale-90"}`}><item.icon size={24} strokeWidth={isActive ? 2.5 : 2} /></div>
+              <Link key={item.id} href={item.href} className="flex-1 flex flex-col items-center justify-center py-2 relative group">
+                <AnimatePresence>
+                  {isActive && (
+                    <motion.div 
+                        layoutId="activePill" 
+                        className={`absolute inset-x-2 inset-y-1 rounded-full -z-10 ${isDark ? "bg-sky-900/20" : "bg-sky-100"}`} 
+                    />
+                  )}
+                </AnimatePresence>
+
+                <div className={`transition-all duration-300 mb-1 ${isActive ? (isDark ? "text-sky-400 scale-110" : "text-[#001829] scale-110") : "opacity-40"}`}>
+                  <SignedIn>
+                     {item.id === 'dashboard' ? <item.icon size={22} strokeWidth={2.5} /> : <item.icon size={22} strokeWidth={2} />}
+                  </SignedIn>
+                  <SignedOut>
+                     {item.id === 'dashboard' ? <LogIn size={22} strokeWidth={2.5} /> : <item.icon size={22} strokeWidth={2} />}
+                  </SignedOut>
+                </div>
+                
+                <span className={`text-[9px] font-black uppercase tracking-tight transition-all ${isActive ? "opacity-100" : "opacity-30"}`}>
+                   <SignedIn>{item.label[lang]}</SignedIn>
+                   <SignedOut>{item.id === 'dashboard' ? CONTENT.login[lang] : item.label[lang]}</SignedOut>
+                </span>
               </Link>
             );
           })}
-        </motion.nav>
+        </nav>
       </div>
-      <div className="md:hidden h-24" />
+
+      {/* Spacing for mobile content */}
+      <div className="md:hidden h-28 pointer-events-none" />
     </>
   );
 }
