@@ -12,6 +12,10 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "UNICEF Club MNUMS",
   description: "Small Actions, Big Differences",
+  icons: {
+    icon: "/logo.jpg",
+    apple: "/logo.jpg",
+  }
 };
 
 export default function RootLayout({

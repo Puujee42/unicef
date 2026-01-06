@@ -88,8 +88,8 @@ export default function JoinPage() {
           <Link href="/" className="flex items-center gap-3 group">
              <div className="relative">
                 <div className="absolute -inset-1 rounded-full bg-[#00aeef] blur-md opacity-20 group-hover:opacity-40 transition-opacity" />
-                <div className="relative w-10 h-10 rounded-full bg-gradient-to-tr from-[#00aeef] to-[#005691] flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                   <span className="font-black text-white text-xs">UC</span>
+                <div className="relative w-10 h-10 overflow-hidden rounded-full border border-[#00aeef]/20 shadow-lg group-hover:scale-110 transition-transform">
+                   <Image src="/logo.jpg" alt="Logo" fill className="object-cover" />
                 </div>
              </div>
              <div className="flex flex-col">
