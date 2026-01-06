@@ -31,8 +31,8 @@ export default function RootLayout({
             {/* Wrap everything in ThemeProvider */}
             <ThemeProvider
               attribute="class"
-              defaultTheme="dark"
-              enableSystem
+              defaultTheme="light"
+              enableSystem={false}
               disableTransitionOnChange
             >
               <Navbar />
