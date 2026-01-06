@@ -68,12 +68,12 @@ const EventCard = ({ event, lang }: any) => {
       style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      className="relative group rounded-[2.5rem] overflow-hidden cursor-pointer h-full min-h-[420px] border transition-all duration-500 bg-[#001829] border-[#00aeef]/20 shadow-[0_0_30px_-10px_rgba(0,0,0,0.8)]"
+      className="relative group rounded-[2.5rem] overflow-hidden cursor-pointer h-full min-h-[420px] border transition-all duration-500 bg-white border-slate-200 dark:bg-[#001829] dark:border-[#00aeef]/20 shadow-[0_0_30px_-10px_rgba(0,0,0,0.1)] dark:shadow-[0_0_30px_-10px_rgba(0,0,0,0.8)]"
     >
       {/* IMAGE SECTION */}
       <div className="absolute inset-0 h-full w-full">
         {/* Placeholder Gradient */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#002b49] to-[#00101a]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-200 to-slate-100 dark:from-[#002b49] dark:to-[#00101a]" />
         
         {/* Actual Image */}
         <Image 
@@ -84,14 +84,14 @@ const EventCard = ({ event, lang }: any) => {
         />
 
         {/* Overlay Gradients */}
-        <div className="absolute inset-0 bg-gradient-to-t via-transparent to-transparent opacity-90 transition-opacity duration-300 from-[#00101a] via-[#001829]/60" />
+        <div className="absolute inset-0 bg-gradient-to-t via-transparent to-transparent opacity-90 transition-opacity duration-300 from-white via-white/60 dark:from-[#00101a] dark:via-[#001829]/60" />
         
         {/* Hover Color Tint */}
         <div className="absolute inset-0 opacity-0 group-hover:opacity-40 transition-opacity duration-500 mix-blend-overlay bg-[#00aeef]" />
       </div>
 
       {/* FLOATING DATE BADGE */}
-      <div className="absolute top-6 left-6 z-20 flex flex-col items-center justify-center rounded-2xl w-14 h-16 border backdrop-blur-md shadow-lg transition-transform duration-300 group-hover:-translate-y-1 bg-white/10 border-white/20 text-white">
+      <div className="absolute top-6 left-6 z-20 flex flex-col items-center justify-center rounded-2xl w-14 h-16 border backdrop-blur-md shadow-lg transition-transform duration-300 group-hover:-translate-y-1 bg-white/80 border-slate-200 text-slate-900 dark:bg-white/10 dark:border-white/20 dark:text-white">
         <span className="text-xl font-black leading-none">{day}</span>
         <span className="text-[9px] font-bold uppercase tracking-widest opacity-80">{month}</span>
       </div>
@@ -105,26 +105,26 @@ const EventCard = ({ event, lang }: any) => {
               <span className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border backdrop-blur-sm bg-[#00aeef]/10 border-[#00aeef]/30 text-[#00aeef]">
                 {event.category}
               </span>
-              <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-white/70">
+              <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-600 dark:text-white/70">
                 <MapPin size={12} className="text-[#00aeef]" /> 
                 {event.location[lang] || event.location.en}
               </span>
            </div>
 
            {/* Title */}
-           <h3 className="text-2xl lg:text-3xl font-black leading-[0.95] tracking-tight mb-2 line-clamp-2 transition-colors text-white">
+           <h3 className="text-2xl lg:text-3xl font-black leading-[0.95] tracking-tight mb-2 line-clamp-2 transition-colors text-slate-900 dark:text-white">
              {event.title[lang] || event.title.en}
            </h3>
            
-           <div className="text-xs font-bold flex items-center gap-2 mb-4 text-white/50">
+           <div className="text-xs font-bold flex items-center gap-2 mb-4 text-slate-500 dark:text-white/50">
               <Clock size={12} className="text-[#00aeef]" /> {event.timeString}
            </div>
         </div>
 
         {/* Hover Reveal Button */}
         <div className="h-0 overflow-hidden group-hover:h-auto transition-all duration-500 opacity-0 group-hover:opacity-100 pointer-events-auto">
-           <div className="w-full h-[1px] mb-4 bg-white/20" />
-           <Link href={`/events/${event._id}`} className="flex items-center gap-2 font-black uppercase tracking-widest text-[10px] transition-all hover:gap-4 text-white">
+           <div className="w-full h-[1px] mb-4 bg-slate-200 dark:bg-white/20" />
+           <Link href={`/events/${event._id}`} className="flex items-center gap-2 font-black uppercase tracking-widest text-[10px] transition-all hover:gap-4 text-slate-900 dark:text-white">
               {lang === 'mn' ? 'Дэлгэрэнгүй' : 'View Details'} 
               <span className="p-1 rounded-full bg-[#00aeef] text-white">
                 <ArrowUpRight size={12} />

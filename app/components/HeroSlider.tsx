@@ -155,7 +155,7 @@ export default function CinematicHero() {
       {/* Side Decorative Element (Vertical Text) */}
       <div className={`hidden xl:block absolute right-12 top-1/2 -translate-y-1/2 vertical-text font-black text-[10px] uppercase tracking-[1em] opacity-20 transition-colors
         ${isDark ? "text-white" : "text-black"}`}>
-        UNICEF STUDENT CLUB • MONGOLIA • 2024
+        UNICEF STUDENT CLUB • MONGOLIA • 2026
       </div>
 
       <style jsx>{`

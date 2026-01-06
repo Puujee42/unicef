@@ -169,16 +169,16 @@ const InfoCard = ({ data, lang, index }: any) => {
       initial={{ opacity: 0, x: 50 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: 0.8 + index * 0.1 }}
-      className="group flex items-center gap-4 md:gap-5 p-3 md:p-4 rounded-xl md:rounded-2xl border backdrop-blur-md transition-all cursor-default transform translate-z-10 shadow-lg bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/20"
+      className="group flex items-center gap-4 md:gap-5 p-3 md:p-4 rounded-xl md:rounded-2xl border backdrop-blur-md transition-all cursor-default transform translate-z-10 shadow-lg bg-white/80 border-slate-200 hover:bg-white hover:border-slate-300 dark:bg-white/5 dark:border-white/5 dark:hover:bg-white/10 dark:hover:border-white/20"
     >
       <div className={`w-12 h-12 md:w-14 md:h-14 rounded-lg md:rounded-xl ${data.color} flex items-center justify-center text-white shadow-lg ${data.glow} group-hover:scale-110 transition-transform duration-300`}>
         <data.icon className="w-[22px] h-[22px] md:w-[26px] md:h-[26px]" strokeWidth={2.5} />
       </div>
       <div>
-        <h4 className="font-bold text-[10px] md:text-sm uppercase tracking-wide group-hover:text-[#00aeef] transition-colors text-white">
+        <h4 className="font-bold text-[10px] md:text-sm uppercase tracking-wide group-hover:text-[#00aeef] transition-colors text-slate-900 dark:text-white">
            {data.title[lang]}
         </h4>
-        <p className="text-[10px] md:text-xs mt-1 leading-snug font-medium max-w-[180px] md:max-w-[200px] text-white/60">
+        <p className="text-[10px] md:text-xs mt-1 leading-snug font-medium max-w-[180px] md:max-w-[200px] text-slate-500 dark:text-white/60">
            {data.desc[lang]}
         </p>
       </div>
@@ -212,13 +212,13 @@ export default function Hero() {
 
   return (
     <section 
-      className="relative w-full min-h-screen overflow-hidden flex items-center transition-colors duration-700 bg-[#001829]"
+      className="relative w-full min-h-screen overflow-hidden flex items-center transition-colors duration-700 bg-slate-50 dark:bg-[#001829]"
       onMouseMove={handleMouseMove}
     >
       {/* 1. ATMOSPHERE BACKGROUND */}
       <div className="absolute inset-0 z-0">
          {/* Theme Specific Gradient */}
-         <div className="absolute inset-0 bg-gradient-to-br transition-colors duration-700 from-[#001829] via-[#002b49] to-[#00101a]" />
+         <div className="absolute inset-0 bg-gradient-to-br transition-colors duration-700 from-slate-50 via-white to-slate-100 dark:from-[#001829] dark:via-[#002b49] dark:to-[#00101a]" />
          
          {/* Mouse Follow Spotlight - Uses the pre-defined template variable */}
          <motion.div
@@ -265,7 +265,7 @@ export default function Hero() {
                   Est. 2025
                 </span>
              </div>
-             <span className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-white/40">
+             <span className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-white/40">
                MNUMS Student Club
              </span>
           </motion.div>
@@ -276,7 +276,7 @@ export default function Hero() {
                initial={{ opacity: 0, y: 50 }}
                animate={{ opacity: 1, y: 0 }}
                transition={{ delay: 0.3, duration: 0.8 }}
-               className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black leading-[0.9] tracking-tighter text-white"
+               className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black leading-[0.9] tracking-tighter text-slate-900 dark:text-white"
             >
               {TEXTS.headline[lang]} <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r drop-shadow-sm from-[#00aeef] via-[#38bdf8] to-[#0077a3]">
@@ -292,7 +292,7 @@ export default function Hero() {
              transition={{ delay: 0.5 }}
              className="mb-8 md:mb-10 flex flex-col items-start gap-1 md:gap-2 h-14"
           >
-             <span className="font-bold uppercase tracking-widest text-[9px] md:text-xs flex items-center gap-2 text-white/50">
+             <span className="font-bold uppercase tracking-widest text-[9px] md:text-xs flex items-center gap-2 text-slate-400 dark:text-white/50">
                  <Target className="w-3 h-3 md:w-3.5 md:h-3.5" /> {TEXTS.weStandFor[lang]}
              </span>
              <Typewriter lang={lang} />
@@ -303,7 +303,7 @@ export default function Hero() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.6 }}
-            className="text-base md:text-lg leading-relaxed max-w-lg mb-8 md:mb-10 font-medium text-white/70"
+            className="text-base md:text-lg leading-relaxed max-w-lg mb-8 md:mb-10 font-medium text-slate-600 dark:text-white/70"
           >
             {TEXTS.description[lang]}
           </motion.p>
@@ -318,7 +318,7 @@ export default function Hero() {
             {TEXTS.stats.map((stat, i) => (
               <div key={i}>
                  <p className="text-[#00aeef] text-[8px] md:text-[10px] uppercase font-black tracking-widest mb-1">{stat.label[lang]}</p>
-                 <p className="text-xl md:text-3xl font-bold text-white">{stat.value}</p>
+                 <p className="text-xl md:text-3xl font-bold text-slate-900 dark:text-white">{stat.value}</p>
               </div>
             ))}
           </motion.div>
@@ -339,7 +339,7 @@ export default function Hero() {
                 <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
              </Link>
              
-             <button className="group px-6 md:px-8 py-3 md:py-4 border font-bold rounded-full backdrop-blur-md uppercase tracking-wide text-[10px] md:text-xs flex items-center gap-2 transition-all hover:shadow-lg border-white/10 bg-white/5 text-white hover:bg-white/10 hover:border-white/30"
+             <button className="group px-6 md:px-8 py-3 md:py-4 border font-bold rounded-full backdrop-blur-md uppercase tracking-wide text-[10px] md:text-xs flex items-center gap-2 transition-all hover:shadow-lg border-slate-200 bg-white/50 text-slate-900 hover:bg-white hover:border-slate-300 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10 dark:hover:border-white/30"
              >
                 {lang === 'mn' ? 'Дэлгэрэнгүй' : 'Learn More'}
                 <ArrowRight className="w-3.5 h-3.5 md:w-4 md:h-4 group-hover:translate-x-1 transition-transform" />
@@ -354,12 +354,12 @@ export default function Hero() {
                 initial={{ opacity: 0, scale: 0.8, rotateY: 30 }}
                 animate={{ opacity: 1, scale: 1, rotateY: 0 }}
                 transition={{ delay: 0.5, duration: 1, type: "spring" }}
-                className="relative z-10 backdrop-blur-2xl border rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-8 lg:p-10 shadow-2xl transition-colors duration-500 bg-[#001d30]/70 border-white/10 shadow-black/60"
+                className="relative z-10 backdrop-blur-2xl border rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-8 lg:p-10 shadow-2xl transition-colors duration-500 bg-white/80 border-slate-200 dark:bg-[#001d30]/70 dark:border-white/10 shadow-black/60"
              >
                 {/* Header */}
-                <div className="flex justify-between items-end mb-6 md:mb-8 border-b pb-4 md:pb-6 border-white/10">
+                <div className="flex justify-between items-end mb-6 md:mb-8 border-b pb-4 md:pb-6 border-slate-200 dark:border-white/10">
                    <div>
-                      <h3 className="text-2xl md:text-3xl font-black tracking-tight text-white">{lang === 'mn' ? 'Үйл Ажиллагаа' : 'Activities'}</h3>
+                      <h3 className="text-2xl md:text-3xl font-black tracking-tight text-slate-900 dark:text-white">{lang === 'mn' ? 'Үйл Ажиллагаа' : 'Activities'}</h3>
                       <p className="text-[10px] uppercase tracking-[0.2em] mt-1 md:mt-2 font-bold opacity-80 text-[#00aeef]">
                           {lang === 'mn' ? 'Гол чиглэлүүд' : 'Key Pillars'}
                       </p>
@@ -377,21 +377,21 @@ export default function Hero() {
                 </div>
 
                 {/* Live Member Count Footer */}
-                <div className="mt-6 md:mt-8 pt-4 md:pt-6 border-t flex items-center justify-between border-white/10">
+                <div className="mt-6 md:mt-8 pt-4 md:pt-6 border-t flex items-center justify-between border-slate-200 dark:border-white/10">
                    <div className="flex items-center gap-3 md:gap-4">
                       <div className="flex -space-x-2 md:-space-x-3">
                           {[...Array(4)].map((_, i) => (
-                             <div key={i} className="w-7 h-7 md:w-9 md:h-9 rounded-full border-2 relative overflow-hidden bg-[#002b49] border-[#00aeef]/30">
+                             <div key={i} className="w-7 h-7 md:w-9 md:h-9 rounded-full border-2 relative overflow-hidden bg-slate-100 dark:bg-[#002b49] border-[#00aeef]/30">
                                 <div className="absolute inset-0 bg-gradient-to-br from-transparent to-black/30" />
                              </div>
                           ))}
-                          <div className="w-7 h-7 md:w-9 md:h-9 rounded-full border-2 flex items-center justify-center text-[8px] md:text-[9px] font-black bg-[#00aeef] border-[#001d30] text-white">
+                          <div className="w-7 h-7 md:w-9 md:h-9 rounded-full border-2 flex items-center justify-center text-[8px] md:text-[9px] font-black bg-[#00aeef] border-white dark:border-[#001d30] text-white">
                              +50
                           </div>
                       </div>
                       <div className="flex flex-col">
-                        <span className="text-[10px] md:text-sm font-bold text-white">Active Members</span>
-                        <span className="text-[8px] md:text-[10px] uppercase tracking-widest text-white/40">Growing daily</span>
+                        <span className="text-[10px] md:text-sm font-bold text-slate-900 dark:text-white">Active Members</span>
+                        <span className="text-[8px] md:text-[10px] uppercase tracking-widest text-slate-500 dark:text-white/40">Growing daily</span>
                       </div>
                    </div>
                    <div className="h-2 w-2 rounded-full bg-green-500 shadow-[0_0_10px_#22c55e] animate-pulse" />
@@ -406,7 +406,7 @@ export default function Hero() {
       </div>
 
       {/* 3. SCROLLING MARQUEE (Integrated Seamlessly) */}
-      <div className="absolute bottom-0 left-0 w-full z-20 border-t backdrop-blur-sm border-white/5 bg-[#00101a]/50">
+      <div className="absolute bottom-0 left-0 w-full z-20 border-t backdrop-blur-sm border-slate-200 bg-white/50 dark:border-white/5 dark:bg-[#00101a]/50">
         <motion.div 
           animate={{ x: [0, -1000] }}
           transition={{ repeat: Infinity, duration: 30, ease: "linear" }}
@@ -414,11 +414,11 @@ export default function Hero() {
         >
           {[...Array(8)].map((_, i) => (
             <div key={i} className="flex items-center gap-12 md:gap-16">
-              <span className="font-black uppercase text-xl md:text-3xl tracking-widest text-white/20">
+              <span className="font-black uppercase text-xl md:text-3xl tracking-widest text-slate-300 dark:text-white/20">
                 {lang === 'mn' ? "ХҮҮХДИЙН ТӨЛӨӨ" : "FOR EVERY CHILD"}
               </span>
               <span className="text-[#00aeef] text-lg">★</span>
-              <span className="font-black uppercase text-xl md:text-3xl tracking-widest text-white/20">
+              <span className="font-black uppercase text-xl md:text-3xl tracking-widest text-slate-300 dark:text-white/20">
                 {lang === 'mn' ? "ГЭРЭЛТ ИРЭЭДҮЙ" : "BRIGHT FUTURE"}
               </span>
               <span className="text-[#fbbf24] text-lg md:text-xl">●</span>
