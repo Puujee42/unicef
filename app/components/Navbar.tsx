@@ -49,7 +49,7 @@ export default function Navbar() {
 
   if (!mounted) return null;
 
-  const isDark = resolvedTheme === "dark";
+  const isDark = resolvedTheme === "light";
   const toggleLanguage = () => setLanguage(lang === "mn" ? "en" : "mn");
   const toggleTheme = () => setTheme(isDark ? "light" : "dark");
 
