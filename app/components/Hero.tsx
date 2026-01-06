@@ -163,25 +163,22 @@ const TiltCard = ({ children }: { children: React.ReactNode }) => {
 };
 
 // 3. Info List Item
-const InfoCard = ({ data, lang, index, isDark }: any) => {
+const InfoCard = ({ data, lang, index }: any) => {
   return (
     <motion.div
       initial={{ opacity: 0, x: 50 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: 0.8 + index * 0.1 }}
-      className={`group flex items-center gap-5 p-4 rounded-2xl border backdrop-blur-md transition-all cursor-default transform translate-z-10 shadow-lg 
-        ${isDark 
-           ? "bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/20" 
-           : "bg-white/60 border-slate-200/60 hover:bg-white hover:border-sky-200 shadow-slate-200/50"}`}
+      className="group flex items-center gap-5 p-4 rounded-2xl border backdrop-blur-md transition-all cursor-default transform translate-z-10 shadow-lg bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/20"
     >
       <div className={`w-14 h-14 rounded-xl ${data.color} flex items-center justify-center text-white shadow-lg ${data.glow} group-hover:scale-110 transition-transform duration-300`}>
         <data.icon size={26} strokeWidth={2.5} />
       </div>
       <div>
-        <h4 className={`font-bold text-sm uppercase tracking-wide group-hover:text-[#00aeef] transition-colors ${isDark ? 'text-white' : 'text-slate-800'}`}>
+        <h4 className="font-bold text-sm uppercase tracking-wide group-hover:text-[#00aeef] transition-colors text-white">
            {data.title[lang]}
         </h4>
-        <p className={`text-xs mt-1 leading-snug font-medium max-w-[200px] ${isDark ? 'text-white/60' : 'text-slate-600'}`}>
+        <p className="text-xs mt-1 leading-snug font-medium max-w-[200px] text-white/60">
            {data.desc[lang]}
         </p>
       </div>
@@ -192,13 +189,10 @@ const InfoCard = ({ data, lang, index, isDark }: any) => {
 // --- MAIN HERO ---
 export default function Hero() {
   const { language: lang } = useLanguage();
-  const { theme } = useTheme();
 
   // Handle Hydration mismatch by mounting check
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
-  
-  const isDark = mounted && (theme === 'dark' || !theme);
   
   // Spotlight
   const mouseX = useMotionValue(0);
@@ -218,16 +212,13 @@ export default function Hero() {
 
   return (
     <section 
-      className={`relative w-full min-h-screen overflow-hidden flex items-center transition-colors duration-700
-         ${isDark ? 'bg-[#001829]' : 'bg-[#f0f9ff]'}`}
+      className="relative w-full min-h-screen overflow-hidden flex items-center transition-colors duration-700 bg-[#001829]"
       onMouseMove={handleMouseMove}
     >
       {/* 1. ATMOSPHERE BACKGROUND */}
       <div className="absolute inset-0 z-0">
          {/* Theme Specific Gradient */}
-         <div className={`absolute inset-0 bg-gradient-to-br transition-colors duration-700
-            ${isDark ? "from-[#001829] via-[#002b49] to-[#00101a]" : "from-[#f0f9ff] via-[#e0f2fe] to-white"}`} 
-         />
+         <div className="absolute inset-0 bg-gradient-to-br transition-colors duration-700 from-[#001829] via-[#002b49] to-[#00101a]" />
          
          {/* Mouse Follow Spotlight - Uses the pre-defined template variable */}
          <motion.div
@@ -239,16 +230,14 @@ export default function Hero() {
 
          {/* Floating Particles (CSS Animation) */}
          <div className="absolute inset-0 opacity-20 pointer-events-none">
-            <div className={`absolute top-1/4 left-1/4 w-2 h-2 rounded-full animate-pulse ${isDark ? 'bg-white' : 'bg-sky-400'}`} style={{ animationDuration: '3s' }} />
+            <div className="absolute top-1/4 left-1/4 w-2 h-2 rounded-full animate-pulse bg-white" style={{ animationDuration: '3s' }} />
             <div className="absolute top-3/4 right-1/4 w-3 h-3 bg-[#00aeef] rounded-full animate-pulse" style={{ animationDuration: '5s' }} />
             <div className="absolute top-1/2 left-3/4 w-1 h-1 bg-[#fbbf24] rounded-full animate-pulse" style={{ animationDuration: '4s' }} />
          </div>
 
          {/* Glows */}
-         <div className={`absolute -top-[20%] -left-[10%] w-[800px] h-[800px] rounded-full blur-[200px] transition-opacity
-            ${isDark ? 'bg-[#00aeef] opacity-[0.1]' : 'bg-[#00aeef] opacity-[0.05]'}`} />
-         <div className={`absolute -bottom-[20%] -right-[10%] w-[800px] h-[800px] rounded-full blur-[200px] transition-opacity
-            ${isDark ? 'bg-[#005691] opacity-[0.15]' : 'bg-[#bae6fd] opacity-[0.3]'}`} />
+         <div className="absolute -top-[20%] -left-[10%] w-[800px] h-[800px] rounded-full blur-[200px] transition-opacity bg-[#00aeef] opacity-[0.1]" />
+         <div className="absolute -bottom-[20%] -right-[10%] w-[800px] h-[800px] rounded-full blur-[200px] transition-opacity bg-[#005691] opacity-[0.15]" />
          
          {/* Noise Overlay */}
          <div className="absolute inset-0 opacity-[0.03] bg-[url('/noise.png')] mix-blend-overlay" />
@@ -267,10 +256,7 @@ export default function Hero() {
             transition={{ delay: 0.2 }}
             className="flex items-center gap-3 mb-8"
           >
-             <div className={`px-4 py-1.5 rounded-full border backdrop-blur-md flex items-center gap-2 transition-colors
-                ${isDark 
-                   ? "bg-[#00aeef]/10 border-[#00aeef]/30" 
-                   : "bg-white/60 border-sky-200 shadow-sm"}`}>
+             <div className="px-4 py-1.5 rounded-full border backdrop-blur-md flex items-center gap-2 transition-colors bg-[#00aeef]/10 border-[#00aeef]/30">
                 <span className="relative flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00aeef] opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-[#00aeef]"></span>
@@ -279,7 +265,7 @@ export default function Hero() {
                   Est. 2025
                 </span>
              </div>
-             <span className={`text-xs font-bold uppercase tracking-widest ${isDark ? 'text-white/40' : 'text-slate-500'}`}>
+             <span className="text-xs font-bold uppercase tracking-widest text-white/40">
                MNUMS Student Club
              </span>
           </motion.div>
@@ -290,11 +276,10 @@ export default function Hero() {
                initial={{ opacity: 0, y: 50 }}
                animate={{ opacity: 1, y: 0 }}
                transition={{ delay: 0.3, duration: 0.8 }}
-               className={`text-6xl md:text-7xl lg:text-8xl font-black leading-[0.9] tracking-tighter ${isDark ? 'text-white' : 'text-slate-900'}`}
+               className="text-6xl md:text-7xl lg:text-8xl font-black leading-[0.9] tracking-tighter text-white"
             >
               {TEXTS.headline[lang]} <br />
-              <span className={`text-transparent bg-clip-text bg-gradient-to-r drop-shadow-sm 
-                 ${isDark ? "from-[#00aeef] via-[#38bdf8] to-[#0077a3]" : "from-[#00aeef] to-[#005691]"}`}>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r drop-shadow-sm from-[#00aeef] via-[#38bdf8] to-[#0077a3]">
                 {TEXTS.highlight[lang]}
               </span>
             </motion.h1>
@@ -307,7 +292,7 @@ export default function Hero() {
              transition={{ delay: 0.5 }}
              className="mb-10 flex flex-col items-start gap-2 h-14"
           >
-             <span className={`font-bold uppercase tracking-widest text-xs flex items-center gap-2 ${isDark ? 'text-white/50' : 'text-slate-500'}`}>
+             <span className="font-bold uppercase tracking-widest text-xs flex items-center gap-2 text-white/50">
                  <Target size={14} /> {TEXTS.weStandFor[lang]}
              </span>
              <Typewriter lang={lang} />
@@ -318,7 +303,7 @@ export default function Hero() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.6 }}
-            className={`text-lg leading-relaxed max-w-lg mb-10 font-medium ${isDark ? 'text-white/70' : 'text-slate-600'}`}
+            className="text-lg leading-relaxed max-w-lg mb-10 font-medium text-white/70"
           >
             {TEXTS.description[lang]}
           </motion.p>
@@ -328,12 +313,12 @@ export default function Hero() {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.7 }}
-            className={`flex gap-10 mb-12 border-l-4 pl-6 ${isDark ? 'border-[#00aeef]' : 'border-sky-300'}`}
+            className="flex gap-10 mb-12 border-l-4 pl-6 border-[#00aeef]"
           >
             {TEXTS.stats.map((stat, i) => (
               <div key={i}>
                  <p className="text-[#00aeef] text-[10px] uppercase font-black tracking-widest mb-1">{stat.label[lang]}</p>
-                 <p className={`text-3xl font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>{stat.value}</p>
+                 <p className="text-3xl font-bold text-white">{stat.value}</p>
               </div>
             ))}
           </motion.div>
@@ -345,10 +330,7 @@ export default function Hero() {
              transition={{ delay: 0.8 }}
              className="flex flex-wrap gap-4"
           >
-             <Link href="/join" className={`group relative px-8 py-4 text-white font-bold rounded-full overflow-hidden transition-all shadow-lg hover:shadow-xl hover:scale-105
-                ${isDark 
-                  ? "bg-[#00aeef] hover:bg-[#009bd5] shadow-[#00aeef]/40" 
-                  : "bg-[#00aeef] hover:bg-[#009bd5] shadow-sky-300"}`}
+             <Link href="/join" className="group relative px-8 py-4 text-white font-bold rounded-full overflow-hidden transition-all shadow-lg hover:shadow-xl hover:scale-105 bg-[#00aeef] hover:bg-[#009bd5] shadow-[#00aeef]/40"
              >
                 <span className="relative z-10 flex items-center gap-3 uppercase tracking-wide text-xs">
                    <Heart size={18} className="fill-white" />
@@ -357,10 +339,7 @@ export default function Hero() {
                 <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
              </Link>
              
-             <button className={`group px-8 py-4 border font-bold rounded-full backdrop-blur-md uppercase tracking-wide text-xs flex items-center gap-2 transition-all hover:shadow-lg
-                ${isDark 
-                  ? "border-white/10 bg-white/5 text-white hover:bg-white/10 hover:border-white/30" 
-                  : "border-slate-200 bg-white/50 text-slate-700 hover:bg-white hover:border-sky-200"}`}
+             <button className="group px-8 py-4 border font-bold rounded-full backdrop-blur-md uppercase tracking-wide text-xs flex items-center gap-2 transition-all hover:shadow-lg border-white/10 bg-white/5 text-white hover:bg-white/10 hover:border-white/30"
              >
                 {lang === 'mn' ? 'Дэлгэрэнгүй' : 'Learn More'}
                 <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
@@ -375,21 +354,17 @@ export default function Hero() {
                 initial={{ opacity: 0, scale: 0.8, rotateY: 30 }}
                 animate={{ opacity: 1, scale: 1, rotateY: 0 }}
                 transition={{ delay: 0.5, duration: 1, type: "spring" }}
-                className={`relative z-10 backdrop-blur-2xl border rounded-[2.5rem] p-8 lg:p-10 shadow-2xl transition-colors duration-500
-                   ${isDark 
-                     ? "bg-[#001d30]/70 border-white/10 shadow-black/60" 
-                     : "bg-white/60 border-white/40 shadow-sky-100/50"}`}
+                className="relative z-10 backdrop-blur-2xl border rounded-[2.5rem] p-8 lg:p-10 shadow-2xl transition-colors duration-500 bg-[#001d30]/70 border-white/10 shadow-black/60"
              >
                 {/* Header */}
-                <div className={`flex justify-between items-end mb-8 border-b pb-6 ${isDark ? "border-white/10" : "border-slate-200/60"}`}>
+                <div className="flex justify-between items-end mb-8 border-b pb-6 border-white/10">
                    <div>
-                      <h3 className={`text-3xl font-black tracking-tight ${isDark ? "text-white" : "text-slate-900"}`}>{lang === 'mn' ? 'Үйл Ажиллагаа' : 'Activities'}</h3>
-                      <p className={`text-xs uppercase tracking-[0.2em] mt-2 font-bold opacity-80 ${isDark ? "text-[#00aeef]" : "text-sky-600"}`}>
+                      <h3 className="text-3xl font-black tracking-tight text-white">{lang === 'mn' ? 'Үйл Ажиллагаа' : 'Activities'}</h3>
+                      <p className="text-xs uppercase tracking-[0.2em] mt-2 font-bold opacity-80 text-[#00aeef]">
                           {lang === 'mn' ? 'Гол чиглэлүүд' : 'Key Pillars'}
                       </p>
                    </div>
-                   <div className={`p-3 rounded-2xl border animate-pulse-slow 
-                      ${isDark ? "bg-[#00aeef]/10 border-[#00aeef]/20" : "bg-sky-50 border-sky-100"}`}>
+                   <div className="p-3 rounded-2xl border animate-pulse-slow bg-[#00aeef]/10 border-[#00aeef]/20">
                       <Globe className="text-[#00aeef]" size={36} strokeWidth={1.5} />
                    </div>
                 </div>
@@ -397,26 +372,26 @@ export default function Hero() {
                 {/* Info Cards List */}
                 <div className="space-y-4">
                    {ACTIVITY_CARDS.map((card, idx) => (
-                      <InfoCard key={card.id} data={card} index={idx} lang={lang} isDark={isDark} />
+                      <InfoCard key={card.id} data={card} index={idx} lang={lang} />
                    ))}
                 </div>
 
                 {/* Live Member Count Footer */}
-                <div className={`mt-8 pt-6 border-t flex items-center justify-between ${isDark ? "border-white/10" : "border-slate-200/60"}`}>
+                <div className="mt-8 pt-6 border-t flex items-center justify-between border-white/10">
                    <div className="flex items-center gap-4">
                       <div className="flex -space-x-3">
                           {[...Array(4)].map((_, i) => (
-                             <div key={i} className={`w-9 h-9 rounded-full border-2 relative overflow-hidden ${isDark ? "bg-[#002b49] border-[#00aeef]/30" : "bg-white border-white shadow-sm"}`}>
-                                <div className={`absolute inset-0 ${isDark ? "bg-gradient-to-br from-transparent to-black/30" : "bg-slate-100"}`} />
+                             <div key={i} className="w-9 h-9 rounded-full border-2 relative overflow-hidden bg-[#002b49] border-[#00aeef]/30">
+                                <div className="absolute inset-0 bg-gradient-to-br from-transparent to-black/30" />
                              </div>
                           ))}
-                          <div className={`w-9 h-9 rounded-full border-2 flex items-center justify-center text-[9px] font-black ${isDark ? "bg-[#00aeef] border-[#001d30] text-white" : "bg-sky-500 border-white text-white"}`}>
+                          <div className="w-9 h-9 rounded-full border-2 flex items-center justify-center text-[9px] font-black bg-[#00aeef] border-[#001d30] text-white">
                              +50
                           </div>
                       </div>
                       <div className="flex flex-col">
-                        <span className={`text-sm font-bold ${isDark ? "text-white" : "text-slate-800"}`}>Active Members</span>
-                        <span className={`text-[10px] uppercase tracking-widest ${isDark ? "text-white/40" : "text-slate-400"}`}>Growing daily</span>
+                        <span className="text-sm font-bold text-white">Active Members</span>
+                        <span className="text-[10px] uppercase tracking-widest text-white/40">Growing daily</span>
                       </div>
                    </div>
                    <div className="h-2 w-2 rounded-full bg-green-500 shadow-[0_0_10px_#22c55e] animate-pulse" />
@@ -425,14 +400,13 @@ export default function Hero() {
            </TiltCard>
 
            {/* Floating Background Blobs behind Card */}
-           <div className={`absolute -top-12 -right-12 w-64 h-64 rounded-full blur-[100px] opacity-20 -z-10 animate-pulse-slow ${isDark ? 'bg-[#00aeef]' : 'bg-sky-300'}`} />
-           <div className={`absolute -bottom-12 -left-12 w-64 h-64 rounded-full blur-[100px] -z-10 animate-pulse-slow delay-1000 ${isDark ? 'bg-[#fbbf24] opacity-10' : 'bg-yellow-200 opacity-20'}`} />
+           <div className="absolute -top-12 -right-12 w-64 h-64 rounded-full blur-[100px] opacity-20 -z-10 animate-pulse-slow bg-[#00aeef]" />
+           <div className="absolute -bottom-12 -left-12 w-64 h-64 rounded-full blur-[100px] -z-10 animate-pulse-slow delay-1000 bg-[#fbbf24] opacity-10" />
         </div>
       </div>
 
       {/* 3. SCROLLING MARQUEE (Integrated Seamlessly) */}
-      <div className={`absolute bottom-0 left-0 w-full z-20 border-t backdrop-blur-sm
-         ${isDark ? "border-white/5 bg-[#00101a]/50" : "border-slate-100 bg-white/60"}`}>
+      <div className="absolute bottom-0 left-0 w-full z-20 border-t backdrop-blur-sm border-white/5 bg-[#00101a]/50">
         <motion.div 
           animate={{ x: [0, -1000] }}
           transition={{ repeat: Infinity, duration: 30, ease: "linear" }}
@@ -440,11 +414,11 @@ export default function Hero() {
         >
           {[...Array(8)].map((_, i) => (
             <div key={i} className="flex items-center gap-16">
-              <span className={`font-black uppercase text-3xl tracking-widest ${isDark ? "text-white/20" : "text-slate-300"}`}>
+              <span className="font-black uppercase text-3xl tracking-widest text-white/20">
                 {lang === 'mn' ? "ХҮҮХДИЙН ТӨЛӨӨ" : "FOR EVERY CHILD"}
               </span>
               <span className="text-[#00aeef] text-xl">★</span>
-              <span className={`font-black uppercase text-3xl tracking-widest ${isDark ? "text-white/20" : "text-slate-300"}`}>
+              <span className="font-black uppercase text-3xl tracking-widest text-white/20">
                 {lang === 'mn' ? "ГЭРЭЛТ ИРЭЭДҮЙ" : "BRIGHT FUTURE"}
               </span>
               <span className="text-[#fbbf24] text-xl">●</span>

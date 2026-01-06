@@ -28,10 +28,10 @@ export default function RootLayout({
       <html lang="en" suppressHydrationWarning> {/* Add suppressHydrationWarning */}
         <body className={inter.className}>
           <LanguageProvider>
-            {/* Wrap everything in ThemeProvider */}
             <ThemeProvider
               attribute="class"
-              defaultTheme="light"
+              defaultTheme="dark"
+              forcedTheme="dark"
               enableSystem={false}
               disableTransitionOnChange
             >
