@@ -22,11 +22,7 @@ import { useLanguage } from "../context/LanguageContext";
 import { useTheme } from "next-themes";
 
 // --- CONFIG ---
-const IMPACT_STATS = [
-  { id: 1, label: { en: "Active Members", mn: "Идэвхтэй гишүүд" }, value: "500+", icon: Users },
-  { id: 2, label: { en: "Projects", mn: "Төслүүд" }, value: "12+", icon: Sparkles },
-  { id: 3, label: { en: "Impacted Lives", mn: "Хүрсэн хүүхдүүд" }, value: "2.4k", icon: Heart },
-];
+
 
 export default function CinematicHero() {
   const { language: lang } = useLanguage();
@@ -154,47 +150,6 @@ export default function CinematicHero() {
           </Link>
         </motion.div>
 
-      </motion.div>
-
-      {/* 3. FLOATING IMPACT DASHBOARD (Informative Layer) */}
-      <motion.div 
-        initial={{ y: 100, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 1, delay: 1, ease: "circOut" }}
-        className="absolute bottom-32 md:bottom-12 left-0 right-0 z-30 px-4 md:px-6"
-      >
-        <div className={`max-w-5xl mx-auto backdrop-blur-2xl border rounded-[2rem] md:rounded-[2.5rem] p-4 md:p-8 flex flex-row items-center justify-between gap-4 md:gap-8
-          ${isDark 
-            ? "bg-white/5 border-white/10 shadow-black/50" 
-            : "bg-black/5 border-black/10 shadow-slate-200/50"}`}
-        >
-          {IMPACT_STATS.map((stat, i) => (
-            <div key={stat.id} className="flex flex-col md:flex-row items-center md:items-center gap-2 md:gap-4 group flex-1 md:flex-none">
-              <div className={`p-2 md:p-4 rounded-xl md:rounded-2xl transition-colors
-                ${isDark ? "bg-white/5 group-hover:bg-[#00aeef]/20" : "bg-black/5 group-hover:bg-[#00aeef]/10"}`}>
-                <stat.icon size={20} className="text-[#00aeef]" />
-              </div>
-              <div className="flex flex-col items-center md:items-start text-center md:text-left">
-                <span className={`text-base md:text-2xl font-black ${isDark ? "text-white" : "text-slate-900"}`}>
-                  {stat.value}
-                </span>
-                <span className={`text-[7px] md:text-[10px] font-bold uppercase tracking-widest opacity-50 ${isDark ? "text-white" : "text-black"}`}>
-                  {stat.label[lang]}
-                </span>
-              </div>
-              {i < IMPACT_STATS.length - 1 && (
-                <div className={`hidden lg:block h-10 w-px mx-8 ${isDark ? "bg-white/10" : "bg-black/10"}`} />
-              )}
-            </div>
-          ))}
-
-          <div className="hidden sm:block md:ml-4">
-             <Link href="/impact" className="group flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-[#00aeef] hover:underline">
-                {lang === 'mn' ? "БҮХ ҮР ДҮНГ ҮЗЭХ" : "FULL REPORT"}
-                <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
-             </Link>
-          </div>
-        </div>
       </motion.div>
 
       {/* Side Decorative Element (Vertical Text) */}

@@ -152,7 +152,9 @@ export default function Navbar() {
       {/* ========================================================= */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-50 px-5 py-4 flex justify-between items-center pointer-events-none">
         <Link href="/" className="pointer-events-auto">
-           <div className="p-1 rounded-full bg-white/10 backdrop-blur-xl border border-white/30 shadow-2xl">
+           <div className={`p-1 rounded-full backdrop-blur-xl border shadow-2xl transition-all ${
+             isDark ? "bg-white/10 border-white/30" : "bg-white/80 border-sky-100"
+           }`}>
               <Image src="/logo.jpg" alt="Logo" width={34} height={34} className="rounded-full" />
            </div>
         </Link>
@@ -169,7 +171,9 @@ export default function Navbar() {
                 </Link>
             </SignedOut>
 
-            <div className="flex gap-1 p-1 rounded-full bg-black/5 backdrop-blur-md border border-white/10">
+            <div className={`flex gap-1 p-1 rounded-full backdrop-blur-md border transition-all ${
+              isDark ? "bg-black/5 border-white/10" : "bg-white/80 border-sky-100 shadow-sm"
+            }`}>
                 <button onClick={toggleLanguage} className={`w-9 h-9 rounded-full flex items-center justify-center transition-all ${isDark ? "text-sky-200" : "text-sky-900"}`}>
                     <span className="text-[9px] font-black">{lang === 'mn' ? 'EN' : 'MN'}</span>
                 </button>
@@ -191,7 +195,7 @@ export default function Navbar() {
       <div className="lg:hidden fixed bottom-6 left-0 right-0 z-50 px-4 flex justify-center">
         <nav className={`
           flex items-center justify-between w-full max-w-[460px] px-2 py-3 rounded-full border shadow-[0_-15px_50px_rgba(0,0,0,0.2)] backdrop-blur-3xl transition-all duration-700
-          ${isDark ? "bg-[#00101a]/95 border-sky-900/50 shadow-black" : "bg-white/95 border-sky-100 shadow-sky-900/10"}
+          ${isDark ? "bg-[#00101a]/95 border-sky-900/50 shadow-black text-sky-50" : "bg-white/95 border-sky-100 shadow-sky-900/10 text-[#001829]"}
         `}>
           {mobileNav.map((item) => {
             const isActive = pathname === item.href;
@@ -230,11 +234,11 @@ export default function Navbar() {
                   )}
                 </AnimatePresence>
 
-                <div className={`transition-all duration-300 mb-1 ${isActive ? (isDark ? "text-sky-400 scale-110" : "text-[#001829] scale-110") : "opacity-40"}`}>
+                <div className={`transition-all duration-300 mb-1 ${isActive ? (isDark ? "text-sky-400 scale-110" : "text-[#001829] scale-110") : "opacity-60"}`}>
                    <item.icon size={20} strokeWidth={isActive ? 2.5 : 2} />
                 </div>
                 
-                <span className={`text-[8px] font-black uppercase tracking-tighter transition-all ${isActive ? "opacity-100" : "opacity-30"}`}>
+                <span className={`text-[8px] font-black uppercase tracking-tighter transition-all ${isActive ? "opacity-100" : "opacity-60"}`}>
                    {item.label[lang]}
                 </span>
               </Link>
