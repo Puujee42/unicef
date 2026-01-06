@@ -62,30 +62,30 @@ export default function Footer() {
       ${isDark ? "bg-[#00101a]" : "bg-slate-50"}`}>
       
       {/* 1. NEWSLETTER BRIDGE SECTION */}
-      <div className="relative z-20 max-w-7xl mx-auto px-6 -mb-16">
+      <div className="relative z-20 max-w-7xl mx-auto px-4 md:px-6 -mb-12 md:-mb-16">
         <motion.div 
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className={`relative p-1 rounded-[3rem] overflow-hidden shadow-2xl transition-all duration-500
+          className={`relative p-0.5 md:p-1 rounded-[2.5rem] md:rounded-[3rem] overflow-hidden shadow-2xl transition-all duration-500
             ${isDark 
               ? "bg-gradient-to-br from-[#00aeef]/30 to-transparent border border-white/10" 
               : "bg-gradient-to-br from-[#00aeef]/10 to-transparent border border-sky-100"}`}
         >
           {/* Glass Effect Inner */}
-          <div className={`relative z-10 p-8 md:p-12 rounded-[2.9rem] backdrop-blur-3xl flex flex-col lg:flex-row items-center justify-between gap-10
+          <div className={`relative z-10 p-6 md:p-12 rounded-[2.4rem] md:rounded-[2.9rem] backdrop-blur-3xl flex flex-col lg:flex-row items-center justify-between gap-8 md:gap-10
             ${isDark ? "bg-[#001829]/80" : "bg-white/90"}`}>
             
             <div className="max-w-xl text-center lg:text-left">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#00aeef]/10 text-[#00aeef] text-[10px] font-black uppercase tracking-widest mb-4">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#00aeef]/10 text-[#00aeef] text-[9px] md:text-[10px] font-black uppercase tracking-widest mb-4">
                 <Sparkles size={12} fill="currentColor" />
                 {lang === 'mn' ? "Шинэ мэдээ" : "Newsletter"}
               </div>
-              <h2 className={`text-3xl md:text-5xl font-black tracking-tighter leading-none mb-4
+              <h2 className={`text-2xl md:text-5xl font-black tracking-tighter leading-none mb-4
                 ${isDark ? "text-white" : "text-[#001829]"}`}>
                 {lang === 'mn' ? "Өөрчлөлтийн нэг хэсэг бол" : "Be the Change You Want to See"}
               </h2>
-              <p className={`text-lg font-medium opacity-60 ${isDark ? "text-white" : "text-slate-600"}`}>
+              <p className={`text-base md:text-lg font-medium opacity-60 ${isDark ? "text-white" : "text-slate-600"}`}>
                 {lang === 'mn' 
                   ? "Долоо хоног бүр клубын үйл ажиллагааны мэдээллийг и-мэйлээр аваарай." 
                   : "Join our community and get weekly updates on impact, events, and stories."}
@@ -93,21 +93,21 @@ export default function Footer() {
             </div>
 
             <div className="w-full lg:w-auto">
-              <form className="relative flex flex-col sm:flex-row gap-3 min-w-[320px] sm:min-w-[450px]">
+              <form className="relative flex flex-col sm:flex-row gap-3 w-full lg:min-w-[450px]">
                 <input 
                   type="email" 
                   placeholder={lang === 'mn' ? "И-мэйл хаяг" : "Your email address"}
-                  className={`flex-1 px-6 py-5 rounded-2xl text-sm font-bold transition-all focus:outline-none focus:ring-2 focus:ring-[#00aeef]
+                  className={`flex-1 px-6 py-4 md:py-5 rounded-xl md:rounded-2xl text-sm font-bold transition-all focus:outline-none focus:ring-2 focus:ring-[#00aeef]
                     ${isDark 
                       ? "bg-white/5 border border-white/10 text-white placeholder:text-white/20" 
                       : "bg-slate-100 border border-slate-200 text-[#001829] placeholder:text-slate-400"}`}
                 />
-                <button className="bg-[#00aeef] hover:bg-[#009bd5] text-white px-8 py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-[#00aeef]/20 transition-all active:scale-95 flex items-center justify-center gap-2 group">
+                <button className="bg-[#00aeef] hover:bg-[#009bd5] text-white px-8 py-4 md:py-5 rounded-xl md:rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-[#00aeef]/20 transition-all active:scale-95 flex items-center justify-center gap-2 group">
                   {lang === 'mn' ? "Бүртгүүлэх" : "Subscribe"}
                   <Send size={16} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
                 </button>
               </form>
-              <p className={`text-[10px] font-medium mt-4 text-center lg:text-left opacity-40 uppercase tracking-widest ${isDark ? "text-white" : "text-slate-900"}`}>
+              <p className={`text-[9px] md:text-[10px] font-medium mt-4 text-center lg:text-left opacity-40 uppercase tracking-widest ${isDark ? "text-white" : "text-slate-900"}`}>
                 {lang === 'mn' ? "Бид таны мэдээллийг хэзээ ч бусдад хуваалцахгүй" : "Your privacy is our priority. No spam, ever."}
               </p>
             </div>
@@ -116,7 +116,7 @@ export default function Footer() {
       </div>
 
       {/* 2. MAIN FOOTER CONTENT */}
-      <div className={`relative pt-40 pb-12 px-6 border-t transition-colors duration-700
+      <div className={`relative pt-32 md:pt-40 pb-12 px-6 border-t transition-colors duration-700
         ${isDark ? "bg-[#001829] border-white/5" : "bg-white border-slate-100"}`}>
         
         {/* Background Ambience */}
@@ -127,18 +127,18 @@ export default function Footer() {
         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-20">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 md:gap-12 mb-16 md:mb-20">
             
             {/* Column 1: Brand */}
-            <div className="space-y-8">
+            <div className="space-y-6 md:space-y-8">
               <Link href="/" className="flex items-center gap-4 group">
-                <div className={`relative w-14 h-14 rounded-full flex items-center justify-center p-0.5 border-2 transition-transform duration-500 group-hover:rotate-12
+                <div className={`relative w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center p-0.5 border-2 transition-transform duration-500 group-hover:rotate-12
                   ${isDark ? "bg-white border-[#00aeef]" : "bg-white border-sky-100 shadow-sm"}`}>
                    <Image src="/logo.jpg" alt="Logo" width={50} height={50} className="rounded-full object-cover" />
                 </div>
                 <div>
-                  <h2 className={`text-xl font-black tracking-tight leading-none ${isDark ? "text-white" : "text-[#001829]"}`}>UNICEF CLUB</h2>
-                  <p className="text-[#00aeef] font-bold tracking-[0.3em] text-[10px] mt-1">MONGOLIA</p>
+                  <h2 className={`text-lg md:text-xl font-black tracking-tight leading-none ${isDark ? "text-white" : "text-[#001829]"}`}>UNICEF CLUB</h2>
+                  <p className="text-[#00aeef] font-bold tracking-[0.3em] text-[9px] md:text-[10px] mt-1">MONGOLIA</p>
                 </div>
               </Link>
               <p className={`text-sm leading-relaxed font-medium opacity-60 ${isDark ? "text-white" : "text-slate-600"}`}>
@@ -162,10 +162,10 @@ export default function Footer() {
               { title: { en: "Ways to Help", mn: "Туслах замууд" }, items: LINKS.action }
             ].map((col, i) => (
               <div key={i}>
-                <h4 className={`text-xs font-black uppercase tracking-[0.2em] mb-8 ${isDark ? "text-[#00aeef]" : "text-sky-600"}`}>
+                <h4 className={`text-xs font-black uppercase tracking-[0.2em] mb-6 md:mb-8 ${isDark ? "text-[#00aeef]" : "text-sky-600"}`}>
                   {col.title[lang]}
                 </h4>
-                <ul className="space-y-4">
+                <ul className="space-y-3 md:space-y-4">
                   {col.items.map((link, j) => (
                     <li key={j}>
                       <Link href={link.href} className={`text-sm font-bold flex items-center gap-2 group transition-colors
@@ -181,12 +181,12 @@ export default function Footer() {
 
             {/* Column 4: Contact */}
             <div>
-              <h4 className={`text-xs font-black uppercase tracking-[0.2em] mb-8 ${isDark ? "text-[#00aeef]" : "text-sky-600"}`}>
+              <h4 className={`text-xs font-black uppercase tracking-[0.2em] mb-6 md:mb-8 ${isDark ? "text-[#00aeef]" : "text-sky-600"}`}>
                 {lang === 'mn' ? "Холбоо барих" : "Get in Touch"}
               </h4>
-              <ul className="space-y-6">
+              <ul className="space-y-5 md:space-y-6">
                 <li className="flex gap-4">
-                  <div className={`p-3 rounded-2xl h-fit border ${isDark ? "bg-white/5 border-white/10" : "bg-sky-50 border-sky-100"}`}>
+                  <div className={`p-3 rounded-xl md:rounded-2xl h-fit border ${isDark ? "bg-white/5 border-white/10" : "bg-sky-50 border-sky-100"}`}>
                     <MapPin size={18} className="text-[#00aeef]" />
                   </div>
                   <span className={`text-sm font-bold leading-tight ${isDark ? "text-white/60" : "text-slate-600"}`}>
@@ -194,7 +194,7 @@ export default function Footer() {
                   </span>
                 </li>
                 <li className="flex gap-4 items-center">
-                  <div className={`p-3 rounded-2xl border ${isDark ? "bg-white/5 border-white/10" : "bg-sky-50 border-sky-100"}`}>
+                  <div className={`p-3 rounded-xl md:rounded-2xl border ${isDark ? "bg-white/5 border-white/10" : "bg-sky-50 border-sky-100"}`}>
                     <Mail size={18} className="text-[#00aeef]" />
                   </div>
                   <a href="mailto:club@mnums.edu.mn" className={`text-sm font-bold hover:text-[#00aeef] transition-colors ${isDark ? "text-white/60" : "text-slate-600"}`}>
@@ -209,7 +209,7 @@ export default function Footer() {
           <div className="absolute bottom-0 left-0 w-full overflow-hidden pointer-events-none select-none z-0">
              <motion.h1 
                style={{ y: yText }}
-               className={`text-[12rem] md:text-[22rem] font-black text-center leading-[0.7] tracking-tighter whitespace-nowrap opacity-[0.03] transition-colors
+               className={`text-[8rem] sm:text-[12rem] md:text-[22rem] font-black text-center leading-[0.7] tracking-tighter whitespace-nowrap opacity-[0.03] transition-colors
                  ${isDark ? "text-white" : "text-slate-900"}`}
              >
                 UNICEF CLUB
@@ -220,20 +220,20 @@ export default function Footer() {
           <div className={`relative z-10 pt-8 border-t flex flex-col md:flex-row justify-between items-center gap-6
             ${isDark ? "border-white/5" : "border-slate-100"}`}>
             
-            <p className={`text-[10px] font-bold uppercase tracking-widest ${isDark ? "text-white/20" : "text-slate-400"}`}>
+            <p className={`text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-center md:text-left ${isDark ? "text-white/20" : "text-slate-400"}`}>
               © 2025 MNUMS Student UNICEF Club. 
-              <span className="ml-2 inline-flex items-center gap-1">
+              <span className="md:ml-2 inline-flex items-center gap-1">
                 Made with <Heart size={10} className="text-rose-500 fill-rose-500 animate-pulse" /> for every child.
               </span>
             </p>
 
-            <div className="flex items-center gap-8">
-               <Link href="/privacy" className={`text-[10px] font-black uppercase tracking-widest hover:text-[#00aeef] transition-colors ${isDark ? "text-white/20" : "text-slate-400"}`}>
+            <div className="flex items-center gap-6 md:gap-8">
+               <Link href="/privacy" className={`text-[9px] md:text-[10px] font-black uppercase tracking-widest hover:text-[#00aeef] transition-colors ${isDark ? "text-white/20" : "text-slate-400"}`}>
                  {lang === 'mn' ? "Нууцлал" : "Privacy"}
                </Link>
                <button 
                 onClick={scrollToTop}
-                className={`group flex items-center gap-2 px-6 py-2 rounded-full border transition-all text-[10px] font-black uppercase tracking-widest
+                className={`group flex items-center gap-2 px-5 md:px-6 py-2 rounded-full border transition-all text-[9px] md:text-[10px] font-black uppercase tracking-widest
                   ${isDark 
                     ? "bg-white/5 border-white/10 text-white/40 hover:bg-[#00aeef] hover:text-white" 
                     : "bg-slate-50 border-slate-200 text-slate-400 hover:bg-[#00aeef] hover:text-white"}`}

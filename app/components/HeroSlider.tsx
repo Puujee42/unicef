@@ -56,7 +56,7 @@ export default function CinematicHero() {
   if (!mounted) return null;
 
   return (
-    <section className="relative h-screen w-full overflow-hidden flex items-center justify-center">
+    <section className="relative h-screen min-h-[600px] md:h-screen w-full overflow-hidden flex items-center justify-center">
       
       {/* 1. VIDEO BACKGROUND ENGINE */}
       <div className="absolute inset-0 z-0">
@@ -81,7 +81,7 @@ export default function CinematicHero() {
       {/* 2. MAIN CINEMATIC CONTENT */}
       <motion.div 
         style={{ x: springX, y: springY }}
-        className="relative z-20 w-full max-w-7xl mx-auto px-6 md:px-12 flex flex-col items-start"
+        className="relative z-20 w-full max-w-7xl mx-auto px-6 md:px-12 flex flex-col items-start pt-20 md:pt-0"
       >
         
         {/* Dynamic Status Badge */}
@@ -89,14 +89,14 @@ export default function CinematicHero() {
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
-          className={`flex items-center gap-2 px-4 py-2 rounded-full border mb-8 backdrop-blur-md
+          className={`flex items-center gap-2 px-4 py-2 rounded-full border mb-6 md:mb-8 backdrop-blur-md
             ${isDark ? "bg-white/5 border-white/10 text-white" : "bg-black/5 border-black/10 text-black"}`}
         >
           <span className="relative flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00aeef] opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-[#00aeef]"></span>
           </span>
-          <span className="text-[10px] font-black uppercase tracking-[0.3em]">
+          <span className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.3em]">
             {lang === 'mn' ? "ШУУД: ХҮҮХЭД БҮРИЙН ТӨЛӨӨ" : "LIVE: FOR EVERY CHILD"}
           </span>
         </motion.div>
@@ -107,7 +107,7 @@ export default function CinematicHero() {
             initial={{ clipPath: "inset(0 100% 0 0)" }}
             animate={{ clipPath: "inset(0 0% 0 0)" }}
             transition={{ duration: 1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className={`text-6xl md:text-8xl lg:text-9xl font-black tracking-tighter leading-[0.85] mb-8
+            className={`text-5xl sm:text-6xl md:text-8xl lg:text-9xl font-black tracking-tighter leading-[0.85] mb-6 md:mb-8
               ${isDark ? "text-white" : "text-slate-900"}`}
           >
             ACTING FOR <br /> 
@@ -120,7 +120,7 @@ export default function CinematicHero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.5 }}
-            className={`text-lg md:text-2xl font-medium max-w-2xl leading-relaxed mb-12
+            className={`text-base md:text-2xl font-medium max-w-2xl leading-relaxed mb-8 md:mb-12
               ${isDark ? "text-white/60" : "text-slate-700"}`}
           >
             {lang === 'mn' 
@@ -134,17 +134,17 @@ export default function CinematicHero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.7 }}
-          className="flex flex-wrap gap-4 items-center"
+          className="flex flex-wrap gap-3 md:gap-4 items-center"
         >
           <Link href="/join">
-            <button className="px-10 py-5 bg-[#00aeef] hover:bg-[#009bd5] text-white rounded-full font-black uppercase tracking-widest text-xs shadow-2xl shadow-[#00aeef]/40 transition-all hover:scale-105 active:scale-95 flex items-center gap-3">
+            <button className="px-8 md:px-10 py-4 md:py-5 bg-[#00aeef] hover:bg-[#009bd5] text-white rounded-full font-black uppercase tracking-widest text-[10px] md:text-xs shadow-2xl shadow-[#00aeef]/40 transition-all hover:scale-105 active:scale-95 flex items-center gap-3">
               {lang === 'mn' ? "Одоо нэгдэх" : "Join Movement"}
               <ArrowRight size={18} />
             </button>
           </Link>
           
           <Link href="/about">
-            <button className={`px-10 py-5 rounded-full font-black uppercase tracking-widest text-xs transition-all border flex items-center gap-3
+            <button className={`px-8 md:px-10 py-4 md:py-5 rounded-full font-black uppercase tracking-widest text-[10px] md:text-xs transition-all border flex items-center gap-3
               ${isDark 
                 ? "bg-white/5 border-white/10 text-white hover:bg-white/10" 
                 : "bg-black/5 border-black/10 text-black hover:bg-black/10"}`}>
@@ -161,24 +161,24 @@ export default function CinematicHero() {
         initial={{ y: 100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 1, delay: 1, ease: "circOut" }}
-        className="absolute bottom-12 left-0 right-0 z-30 px-6"
+        className="absolute bottom-32 md:bottom-12 left-0 right-0 z-30 px-4 md:px-6"
       >
-        <div className={`max-w-5xl mx-auto backdrop-blur-2xl border rounded-[2.5rem] p-4 md:p-8 flex flex-col md:flex-row items-center justify-between gap-8
+        <div className={`max-w-5xl mx-auto backdrop-blur-2xl border rounded-[2rem] md:rounded-[2.5rem] p-4 md:p-8 flex flex-row items-center justify-between gap-4 md:gap-8
           ${isDark 
             ? "bg-white/5 border-white/10 shadow-black/50" 
             : "bg-black/5 border-black/10 shadow-slate-200/50"}`}
         >
           {IMPACT_STATS.map((stat, i) => (
-            <div key={stat.id} className="flex items-center gap-4 group">
-              <div className={`p-4 rounded-2xl transition-colors
+            <div key={stat.id} className="flex flex-col md:flex-row items-center md:items-center gap-2 md:gap-4 group flex-1 md:flex-none">
+              <div className={`p-2 md:p-4 rounded-xl md:rounded-2xl transition-colors
                 ${isDark ? "bg-white/5 group-hover:bg-[#00aeef]/20" : "bg-black/5 group-hover:bg-[#00aeef]/10"}`}>
-                <stat.icon size={24} className="text-[#00aeef]" />
+                <stat.icon size={20} className="text-[#00aeef]" />
               </div>
-              <div className="flex flex-col">
-                <span className={`text-2xl font-black ${isDark ? "text-white" : "text-slate-900"}`}>
+              <div className="flex flex-col items-center md:items-start text-center md:text-left">
+                <span className={`text-base md:text-2xl font-black ${isDark ? "text-white" : "text-slate-900"}`}>
                   {stat.value}
                 </span>
-                <span className={`text-[10px] font-bold uppercase tracking-widest opacity-50 ${isDark ? "text-white" : "text-black"}`}>
+                <span className={`text-[7px] md:text-[10px] font-bold uppercase tracking-widest opacity-50 ${isDark ? "text-white" : "text-black"}`}>
                   {stat.label[lang]}
                 </span>
               </div>
@@ -188,7 +188,7 @@ export default function CinematicHero() {
             </div>
           ))}
 
-          <div className="md:ml-4">
+          <div className="hidden sm:block md:ml-4">
              <Link href="/impact" className="group flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-[#00aeef] hover:underline">
                 {lang === 'mn' ? "БҮХ ҮР ДҮНГ ҮЗЭХ" : "FULL REPORT"}
                 <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />

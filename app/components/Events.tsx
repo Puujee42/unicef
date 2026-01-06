@@ -173,7 +173,7 @@ export default function EventsSection() {
   if (!mounted) return null;
 
   return (
-    <section className="relative py-24 px-4 overflow-hidden transition-colors duration-700 bg-[#00101a]">
+    <section className="relative py-16 md:py-24 px-4 overflow-hidden transition-colors duration-700 bg-[#00101a]">
       
       {/* --- BACKGROUND AMBIENCE --- */}
       <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none">
@@ -181,14 +181,14 @@ export default function EventsSection() {
          <div className="absolute inset-0 opacity-[0.03] bg-[url('/noise.png')] mix-blend-overlay z-10" />
          
          {/* Blobs */}
-         <div className="absolute -top-20 -right-20 w-[600px] h-[600px] rounded-full blur-[150px] opacity-[0.1] transition-colors duration-700 bg-[#00aeef]" />
-         <div className="absolute bottom-0 left-0 w-[500px] h-[500px] rounded-full blur-[150px] opacity-[0.1] transition-colors duration-700 bg-[#005691]" />
+         <div className="absolute -top-20 -right-20 w-[300px] md:w-[600px] h-[300px] md:h-[600px] rounded-full blur-[100px] md:blur-[150px] opacity-[0.1] transition-colors duration-700 bg-[#00aeef]" />
+         <div className="absolute bottom-0 left-0 w-[250px] md:w-[500px] h-[250px] md:h-[500px] rounded-full blur-[100px] md:blur-[150px] opacity-[0.1] transition-colors duration-700 bg-[#005691]" />
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto">
         
         {/* --- HEADER --- */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 md:gap-8 mb-12 md:mb-16">
            <div>
               <motion.div 
                  initial={{ opacity: 0, x: -20 }}
@@ -197,9 +197,9 @@ export default function EventsSection() {
                  className="flex items-center gap-3 mb-4"
               >
                  <div className="p-2 rounded-full border shadow-sm bg-white/5 border-white/10">
-                    <CalendarDays size={16} className="text-[#00aeef]" />
+                    <CalendarDays size={14} className="text-[#00aeef]" />
                  </div>
-                 <span className="font-black uppercase tracking-[0.25em] text-xs text-white/60">
+                 <span className="font-black uppercase tracking-[0.25em] text-[10px] text-white/60">
                     {lang === 'mn' ? 'Хөтөлбөр' : 'Schedule'}
                  </span>
               </motion.div>
@@ -208,7 +208,7 @@ export default function EventsSection() {
                  initial={{ opacity: 0, y: 20 }}
                  whileInView={{ opacity: 1, y: 0 }}
                  viewport={{ once: true }}
-                 className="text-4xl md:text-6xl lg:text-7xl font-black tracking-tighter leading-[0.9] text-white"
+                 className="text-3xl md:text-6xl lg:text-7xl font-black tracking-tighter leading-[0.9] text-white"
               >
                  {lang === 'mn' ? 'Арга Хэмжээ' : 'Upcoming Events'}
                  <span className="text-[#00aeef]">.</span>
@@ -220,7 +220,7 @@ export default function EventsSection() {
               initial={{ opacity: 0, x: 20 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              className="flex flex-wrap gap-1 p-1.5 rounded-full border backdrop-blur-xl shadow-lg bg-[#001829]/50 border-white/10"
+              className="flex flex-wrap gap-1 p-1.5 rounded-[2rem] md:rounded-full border backdrop-blur-xl shadow-lg bg-[#001829]/50 border-white/10 overflow-x-auto no-scrollbar"
            >
               {CATEGORIES.map((cat) => {
                 const isActive = filter === cat.id;
@@ -228,7 +228,7 @@ export default function EventsSection() {
                   <button
                     key={cat.id}
                     onClick={() => setFilter(cat.id)}
-                    className={`relative px-6 py-2.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all z-10
+                    className={`relative px-4 md:px-6 py-2 md:py-2.5 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all z-10 whitespace-nowrap
                        ${isActive 
                          ? "text-white" 
                          : "text-white/40 hover:text-white"}
@@ -250,32 +250,34 @@ export default function EventsSection() {
 
         {/* --- CONTENT GRID --- */}
         {loading ? (
-            <div className="flex flex-col items-center justify-center py-40 gap-4">
-                <Loader2 className="animate-spin w-12 h-12 text-[#00aeef]" />
-                <p className="text-xs font-bold uppercase tracking-widest text-white/40">
+            <div className="flex flex-col items-center justify-center py-24 md:py-40 gap-4">
+                <Loader2 className="animate-spin w-10 h-10 md:w-12 md:h-12 text-[#00aeef]" />
+                <p className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-white/40">
                    {lang === 'mn' ? 'Уншиж байна...' : 'Loading events...'}
                 </p>
             </div>
         ) : filteredEvents.length > 0 ? (
             <motion.div 
               layout
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 auto-rows-fr"
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 auto-rows-fr"
             >
             <AnimatePresence mode="popLayout">
                 {filteredEvents.map((event) => (
-                    <EventCard key={event._id} event={event} lang={lang} />
+                    <div key={event._id} className="h-full min-h-[380px] md:min-h-[420px]">
+                        <EventCard event={event} lang={lang} />
+                    </div>
                 ))}
             </AnimatePresence>
             </motion.div>
         ) : (
-            <div className="flex flex-col items-center justify-center py-40 border-2 border-dashed rounded-[3rem] border-white/5 bg-white/5">
+            <div className="flex flex-col items-center justify-center py-20 md:py-40 border-2 border-dashed rounded-[2rem] md:rounded-[3rem] border-white/5 bg-white/5">
                 <div className="p-4 rounded-full bg-[#00aeef]/10 mb-4">
-                    <Filter className="text-[#00aeef] w-8 h-8" />
+                    <Filter className="text-[#00aeef] w-6 h-6 md:w-8 md:h-8" />
                 </div>
-                <h3 className="text-lg font-bold text-white">
+                <h3 className="text-base md:text-lg font-bold text-white">
                     {lang === 'mn' ? 'Одоогоор арга хэмжээ байхгүй байна.' : 'No upcoming events found.'}
                 </h3>
-                <p className="text-sm mt-1 text-white/40">
+                <p className="text-[10px] md:text-sm mt-1 text-white/40 text-center px-4">
                     {lang === 'mn' ? 'Та дараа дахин шалгана уу.' : 'Please check back later.'}
                 </p>
             </div>
@@ -285,14 +287,14 @@ export default function EventsSection() {
         <motion.div 
            initial={{ opacity: 0 }}
            whileInView={{ opacity: 1 }}
-           className="mt-24 flex justify-center"
+           className="mt-16 md:mt-24 flex justify-center"
         >
            <Link href="/events" className="group relative inline-flex items-center gap-4">
-              <span className="text-xs font-black uppercase tracking-[0.25em] transition-colors text-white/60 group-hover:text-white">
+              <span className="text-[10px] font-black uppercase tracking-[0.25em] transition-colors text-white/60 group-hover:text-white">
                   {lang === 'mn' ? 'Бүх арга хэмжээг харах' : 'View All Events'}
               </span>
-              <div className="w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:rotate-[-45deg] bg-[#00aeef] text-white shadow-[0_0_25px_rgba(0,174,239,0.4)]">
-                 <ChevronRight size={18} />
+              <div className="w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:rotate-[-45deg] bg-[#00aeef] text-white shadow-[0_0_25px_rgba(0,174,239,0.4)]">
+                 <ChevronRight className="w-4 h-4 md:w-[18px] md:h-[18px]" />
               </div>
            </Link>
         </motion.div>

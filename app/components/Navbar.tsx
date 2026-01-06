@@ -242,9 +242,6 @@ export default function Navbar() {
           })}
         </nav>
       </div>
-
-      {/* Spacing for mobile content */}
-      <div className="lg:hidden h-28 pointer-events-none" />
     </>
   );
 }
