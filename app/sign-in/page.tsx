@@ -16,6 +16,7 @@ import { motion } from "framer-motion";
 import { useSignIn } from "@clerk/nextjs";
 import { useTheme } from "next-themes";
 import { useLanguage } from "../context/LanguageContext";
+import Image from "next/image";
 
 // --- CONTENT ---
 const CONTENT = {

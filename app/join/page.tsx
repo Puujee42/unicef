@@ -13,6 +13,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "next-themes";
 import { useLanguage } from "../context/LanguageContext";
+import Image from "next/image";
 
 // --- CONTENT ---
 const CONTENT = {
