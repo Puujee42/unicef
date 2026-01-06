@@ -92,17 +92,7 @@ export default function SignInPage() {
         <div className="absolute inset-0 opacity-[0.03] bg-[url('/noise.png')] mix-blend-overlay pointer-events-none" />
         
         {/* Logo Navigation */}
-        <div className="absolute top-10 left-6 md:left-12 lg:left-24">
-           <Link href="/" className="flex items-center gap-3 group">
-              <div className="relative w-10 h-10 overflow-hidden rounded-full border border-[#00aeef]/20 shadow-xl transition-transform group-hover:scale-110">
-                 <Image src="/logo.jpg" alt="Logo" fill className="object-cover" />
-              </div>
-              <div className="flex flex-col">
-                <span className={`font-black tracking-tight leading-none ${isDark ? "text-white" : "text-[#001829]"}`}>UNICEF CLUB</span>
-                <span className="text-[#00aeef] text-[10px] font-bold tracking-widest uppercase">Mongolia</span>
-              </div>
-           </Link>
-        </div>
+        
 
         <motion.div 
           initial={{ opacity: 0, y: 20 }}

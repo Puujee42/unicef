@@ -77,17 +77,18 @@ export default function Navbar() {
       {/* ========================================================= */}
       <motion.header 
         className="fixed z-50 left-0 right-0 hidden lg:flex justify-center pointer-events-none"
-        animate={{ y: isScrolled ? 15 : 0 }}
+        animate={{ y: 20 }}
         transition={{ type: "spring", stiffness: 200, damping: 25 }}
       >
         <nav className={`
           pointer-events-auto flex items-center justify-between transition-all duration-700
+          w-[95%] lg:w-[1200px] py-3 px-8 rounded-full border backdrop-blur-2xl shadow-2xl
           ${isScrolled 
-            ? "w-[95%] lg:w-[1200px] py-3 px-8 rounded-full border backdrop-blur-2xl shadow-2xl" 
-            : "w-full max-w-[1500px] py-8 px-12 bg-transparent border-transparent"}
+            ? (isDark ? "bg-[#00101a]/95 border-sky-900/40 shadow-black" : "bg-white/95 border-sky-100 shadow-sky-900/20")
+            : (isDark ? "bg-[#00101a]/40 border-white/5" : "bg-white/40 border-white/20 shadow-none")}
           ${isDark 
-            ? "bg-[#00101a]/80 border-sky-900/40 text-sky-50 shadow-black" 
-            : "bg-white/80 border-sky-100 text-[#001829] shadow-sky-900/10"}
+            ? "text-sky-50" 
+            : "text-[#001829]"}
         `}>
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3 group shrink-0">

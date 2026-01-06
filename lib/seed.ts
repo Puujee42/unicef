@@ -177,6 +177,50 @@ const seedData = async () => {
         university: "UFE",
         color: BRAND.sky
       },
+      {
+        title: { 
+          en: "Medical Students Outreach", 
+          mn: "Анагаахын Оюутнуудын Орон Нутгийн Ажил" 
+        },
+        description: {
+          en: "MNUMS students visiting rural areas to provide basic health checkups and hygiene education.",
+          mn: "АШУҮИС-ийн оюутнууд орон нутагт очиж эрүүл мэндийн анхан шатны зөвлөгөө, ариун цэврийн боловсрол олгох ажил."
+        },
+        date: new Date("2025-08-15T09:00:00.000Z"),
+        timeString: "09:00 - 17:00",
+        location: { 
+          en: "Arkhangai Province", 
+          mn: "Архангай Аймаг" 
+        },
+        image: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?q=80&w=2070&auto=format&fit=crop",
+        category: "campaign",
+        status: "upcoming",
+        featured: false,
+        university: "MNUMS",
+        color: BRAND.ocean
+      },
+      {
+        title: { 
+          en: "First Aid Training", 
+          mn: "Анхны Тусламжийн Сургалт" 
+        },
+        description: {
+          en: "Basic life support and first aid training for university students.",
+          mn: "Их дээд сургуулийн оюутнуудад зориулсан анхны тусламжийн сургалт."
+        },
+        date: new Date("2025-09-10T14:00:00.000Z"),
+        timeString: "14:00 - 16:00",
+        location: { 
+          en: "MNUMS Lecture Hall 1", 
+          mn: "АШУҮИС-ийн 1-р лекцийн заал" 
+        },
+        image: "https://images.unsplash.com/photo-1584036561566-baf8f5f1b144?q=80&w=2070&auto=format&fit=crop",
+        category: "workshop",
+        status: "upcoming",
+        featured: false,
+        university: "MNUMS",
+        color: BRAND.rose
+      },
       // PAST EVENT
       {
         title: { 
@@ -271,7 +315,7 @@ const seedData = async () => {
     const clubsToInsert = [
       {
         clubId: "MNUMS",
-        name: { en: "Mongolian National University of Medical Sciences", mn: "Эрүүл Мэндийн Шинжлэх Ухааны Их Сургууль (ЭМШУИС)" },
+        name: { en: "Mongolian National University of Medical Sciences", mn: "Анагаахын Шинжлэх Ухааны Үндэсний Их Сургууль (АШУҮИС)" },
         description: {
           en: "The leading medical university in Mongolia, fostering the next generation of healthcare professionals.",
           mn: "Монгол улсын анагаах ухааны тэргүүлэх их сургууль, ирээдүйн эрүүл мэндийн мэргэжилтнүүдийг бэлтгэдэг."

@@ -81,24 +81,7 @@ export default function JoinPage() {
              style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40' fill='%2300aeef' fill-opacity='1'/%3E%3C/svg%3E")` }} />
 
         {/* Logo/Home Link */}
-        <motion.div 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="absolute top-10 left-8 md:left-16 lg:left-24"
-        >
-          <Link href="/" className="flex items-center gap-3 group">
-             <div className="relative">
-                <div className="absolute -inset-1 rounded-full bg-[#00aeef] blur-md opacity-20 group-hover:opacity-40 transition-opacity" />
-                <div className="relative w-10 h-10 overflow-hidden rounded-full border border-[#00aeef]/20 shadow-lg group-hover:scale-110 transition-transform">
-                   <Image src="/logo.jpg" alt="Logo" fill className="object-cover" />
-                </div>
-             </div>
-             <div className="flex flex-col">
-                <span className={`font-black leading-none tracking-tight ${isDark ? "text-white" : "text-[#001829]"}`}>UNICEF CLUB</span>
-                <span className="text-[#00aeef] text-[10px] font-bold tracking-[0.2em] uppercase">Mongolia</span>
-             </div>
-          </Link>
-        </motion.div>
+        
 
         {/* Main Content Form */}
         <div className="max-w-lg w-full py-20 relative z-10">

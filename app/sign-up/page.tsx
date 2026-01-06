@@ -29,7 +29,7 @@ const UNIVERSITIES = [
   { id: "NUM", en: "National University of Mongolia", mn: "Монгол Улсын Их Сургууль (МУИС)" },
   { id: "MUST", en: "Mongolian University of Science and Technology", mn: "Шинжлэх Ухаан, Технологийн Их Сургууль (ШУТИС)" },
   { id: "UFE", en: "University of Finance and Economics", mn: "Санхүү, Эдийн Засгийн Их Сургууль (СЭЗИС)" },
-  { id: "MNUMS", en: "Mongolian National University of Medical Sciences", mn: "Эрүүл Мэндийн Шинжлэх Ухааны Их Сургууль (ЭМШУИС)" },
+  { id: "MNUMS", en: "Mongolian National University of Medical Sciences", mn: "Анагаахын Шинжлэх Ухааны Үндэсний Их Сургууль (АШУҮИС)" },
   { id: "MSUE", en: "Mongolian State University of Education", mn: "Боловсролын Их Сургууль (МУБИС)" },
   { id: "MSUA", en: "Mongolian State University of Agriculture", mn: "Хөдөө Аж Ахуйн Их Сургууль (ХААИС)" },
   { id: "MSUAC", en: "Mongolian State University of Arts and Culture", mn: "Соёл, Урлагийн Их Сургууль (СУИС)" },
@@ -151,18 +151,7 @@ export default function SignUpPage() {
         <div className="absolute inset-0 opacity-[0.03] bg-[url('/noise.png')] mix-blend-overlay pointer-events-none" />
         
         {/* LOGO */}
-        <div className="absolute top-10 left-6 md:left-12 lg:left-24">
-           <Link href="/" className="flex items-center gap-3 group">
-              <div className="relative w-10 h-10 overflow-hidden rounded-full border border-[#00aeef]/20 shadow-xl transition-transform group-hover:scale-110">
-                 <Image src="/logo.jpg" alt="Logo" fill className="object-cover" />
-              </div>
-              <div className="flex flex-col">
-                <span className={`font-black tracking-tight leading-none ${isDark ? "text-white" : "text-[#001829]"}`}>UNICEF CLUB</span>
-                <span className="text-[#00aeef] text-[10px] font-bold tracking-widest uppercase">Mongolia</span>
-              </div>
-           </Link>
-        </div>
-
+     
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-md w-full mx-auto relative z-10">
           <h1 className={`text-4xl md:text-5xl font-black tracking-tighter mb-4 transition-colors ${isDark ? "text-white" : "text-[#001829]"}`}>
             {CONTENT.header[lang]}

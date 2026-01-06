@@ -143,7 +143,7 @@ export default function Footer() {
               </Link>
               <p className={`text-sm leading-relaxed font-medium opacity-60 ${isDark ? "text-white" : "text-slate-600"}`}>
                 {lang === 'mn' 
-                  ? "MNUMS Student UNICEF Club нь хүүхэд бүрийн эрхийг хамгаалах, тэднийг дэмжих зорилготой залуучуудын нэгдэл юм."
+                  ? "АШУҮИС-ийн Оюутны UNICEF Клуб нь хүүхэд бүрийн эрхийг хамгаалах, тэднийг дэмжих зорилготой залуучуудын нэгдэл юм."
                   : "Empowering students at MNUMS to advocate for children's rights and create lasting impact across Mongolia."}
               </p>
               <div className="flex gap-4">

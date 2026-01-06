@@ -64,7 +64,7 @@ const UNIVERSITIES = [
   { id: "NUM", en: "National University of Mongolia", mn: "Монгол Улсын Их Сургууль (МУИС)" },
   { id: "MUST", en: "MUST", mn: "Шинжлэх Ухаан, Технологийн Их Сургууль" },
   { id: "UFE", en: "University of Finance and Economics", mn: "Санхүү, Эдийн Засгийн Их Сургууль" },
-  { id: "MNUMS", en: "MNUMS", mn: "Эрүүл Мэндийн Шинжлэх Ухааны Их Сургууль" },
+  { id: "MNUMS", en: "MNUMS", mn: "Анагаахын Шинжлэх Ухааны Үндэсний Их Сургууль (АШУҮИС)" },
   { id: "MSUE", en: "University of Education", mn: "Боловсролын Их Сургууль (МУБИС)" },
   { id: "MSUA", en: "University of Agriculture", mn: "Хөдөө Аж Ахуйн Их Сургууль (ХААИС)" },
   { id: "MSUAC", en: "University of Arts and Culture", mn: "Соёл, Урлагийн Их Сургууль (СУИС)" },
